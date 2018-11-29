@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DailyApp</string>
+    <string name="menu_weather">Weather</string>
+    <string name="menu_exchangeRate">EchangeRate</string>
+</resources>
