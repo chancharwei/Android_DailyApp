@@ -28,7 +28,7 @@ public class WeatherJsonUtility {
                 .appendQueryParameter(AUTHORITY_PARAM,authority)
                 .appendQueryParameter(FORMAT_PARAM,"JSON")
                 .appendQueryParameter(LOCATION_PARAM, areaLocationQuery)
-                .appendQueryParameter("elementName", "MinT,MaxT,PoP,T,Wx")
+                .appendQueryParameter("elementName", "MinT,MaxT,PoP,T,Wx") //PoP12h instead of PoP
                 .build();
 
         checkAreaLocation = areaLocationQuery;

@@ -8,8 +8,11 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.chancharwei.dailyapp.utilies.NetworkUtility;
 import com.example.chancharwei.dailyapp.utilies.WeatherJsonUtility;
@@ -20,22 +23,36 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 
-public class Weather extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>{
+public class Weather extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>,WeatherAdapter.WeatherAdapterOnclickHandler{
     final static String TAG = Weather.class.getName();
+    private RecyclerView mRecyclerView;
+    private WeatherAdapter mWadapter;
     private static final int WEATHER_QUERY_ID = 0;
     private static final String CITY_KEY = "cityKey";
     private static final String AREA_KEY = "areaKey";
     private static final String WEATHERURL_KEY = "urlKey";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG,"onCreate");
-        getSupportActionBar().setTitle("Weather");
         setContentView(R.layout.activity_weather);
+        getSupportActionBar().setTitle("Weather");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //TODO check use bundle is parameters
-        getSupportLoaderManager().initLoader(WEATHER_QUERY_ID, null, this); //loader init
 
+        Log.i(TAG,"onCreate");
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_weather);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        mRecyclerView.setLayoutManager(layoutManager);  //can use 3 layoutManager LinearLayoutManager,StaggeredGridLayoutManager,GridLayoutManager
+        //TODO
+        mRecyclerView.setHasFixedSize(true);
+
+        mWadapter = new WeatherAdapter(this);
+        mRecyclerView.setAdapter(mWadapter);
+
+
+        getSupportLoaderManager().initLoader(WEATHER_QUERY_ID, null, this); //loader init
+        //TODO will cancel in the future
         weatherSearch("新北市","永和區");
 
     }
@@ -58,6 +75,13 @@ public class Weather extends AppCompatActivity implements LoaderManager.LoaderCa
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onClick(String weatherItem) {
+        Toast.makeText(this, weatherItem, Toast.LENGTH_SHORT)
+                .show();
+    }
+
     //TODO check how to link this function
     @NonNull
     @Override
@@ -66,7 +90,6 @@ public class Weather extends AppCompatActivity implements LoaderManager.LoaderCa
 
             @Override
             protected void onStartLoading() {
-                Log.d(TAG,"Byron check onStartLoading null = "+(args==null));
                 if(args == null){
                     return;
                 }
@@ -100,19 +123,28 @@ public class Weather extends AppCompatActivity implements LoaderManager.LoaderCa
                 }
                 return null;
             }
+
+
         };
         //return null;
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<String[]> loader) {
-        Log.d(TAG,"onLoaderReset");
+        Log.i(TAG,"onLoaderReset");
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<String[]> loader, String[] data) {
-        Log.d(TAG,"onLoadFinished");
+    public void onLoadFinished(@NonNull Loader<String[]> loader, String[] weatherData) {
+        Log.i(TAG,"onLoadFinished");
+        if(weatherData != null){
+            mWadapter.setWeatherData(weatherData);
+        }
+
+
     }
+
+
 
     private void weatherSearch(String city,String area){
         String weatherUrl;
