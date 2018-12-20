@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -76,9 +75,9 @@ public class MainActivity extends AppCompatActivity {
         Intent featureIntent = new Intent();
 
         if(itemThatWasClickedId == R.id.weather){
-            Log.i(TAG,"Select Weather feature ");
+            Log.i(TAG,"Select WeatherActivity feature ");
             Context context = MainActivity.this;
-            featureIntent.setClass(context,Weather.class);
+            featureIntent.setClass(context,WeatherActivity.class);
             //String textToShow = "Search clicked";
             //Toast.makeText(context, textToShow, Toast.LENGTH_SHORT).show();
             startActivity(featureIntent);

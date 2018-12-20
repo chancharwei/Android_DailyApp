@@ -23,6 +23,9 @@ public class WeatherJsonUtility {
     private static String checkSuccess,checkCityLocation,checkAreaLocation;
 
     public String buildWeatherUrl(String areaLocationQuery) {
+        if(areaLocationQuery.contains("台")){
+            areaLocationQuery = areaLocationQuery.replace("台","臺");
+        }
         //String = URLEncoder.encode("台北市","UTF-8"); also can use this method to enclde with UTF-8
         Uri builtUri = Uri.parse(WEATHER_LOCATION_URL).buildUpon()
                 .appendQueryParameter(AUTHORITY_PARAM,authority)
@@ -66,7 +69,7 @@ public class WeatherJsonUtility {
 
 
         if(!checkCityLocation.equals(locationCityInfo.getString("locationsName"))){
-            Log.e(TAG,"Get wrong data, wrong data is "+locationCityInfo.getString("locationsName"));
+            Log.e(TAG,"Get wrong data, correct city is "+locationCityInfo.getString("locationsName")+" input city is "+checkCityLocation);
             return null;
         }
 
@@ -145,6 +148,10 @@ public class WeatherJsonUtility {
     }
 
     public void selectWeatherDataFromLocation(String location){
+        if(location.contains("台")){
+            location = location.replace("台","臺");
+            Log.d(TAG,"Byron check selectWeatherDataFromLocation location = "+location);
+        }
         switch(location){
             case "宜蘭縣" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-003";
@@ -153,7 +160,7 @@ public class WeatherJsonUtility {
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-007";
                 break;
             case "新竹縣" :
-                WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-0011";
+                WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-011";
                 break;
             case "苗栗縣" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-015";
@@ -174,7 +181,6 @@ public class WeatherJsonUtility {
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-035";
                 break;
             case "臺東縣" :
-            case "台東縣" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-039";
                 break;
             case "花蓮縣" :
@@ -193,23 +199,20 @@ public class WeatherJsonUtility {
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-059";
                 break;
             case "臺北市" :
-            case "台北市" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-063";
                 break;
             case "高雄市" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-067";
                 break;
             case "新北市" :
-            case "台北縣" :
             case "臺北縣" :
+                location = "新北市";
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-071";
                 break;
             case "臺中市" :
-            case "台中市" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-075";
                 break;
             case "臺南市" :
-            case "台南市" :
                 WEATHER_LOCATION_URL = WEATHER_BASE_URL+"F-D0047-079";
                 break;
             case "連江縣" :
