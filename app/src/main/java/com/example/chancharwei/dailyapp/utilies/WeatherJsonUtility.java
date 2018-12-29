@@ -31,12 +31,12 @@ public class WeatherJsonUtility {
                 .appendQueryParameter(AUTHORITY_PARAM,authority)
                 .appendQueryParameter(FORMAT_PARAM,"JSON")
                 .appendQueryParameter(LOCATION_PARAM, areaLocationQuery)
-                .appendQueryParameter("elementName", "MinT,MaxT,PoP,T,Wx") //PoP12h instead of PoP
+                .appendQueryParameter("elementName", "MinT,MaxT,PoP12h,T,Wx") //PoP12h instead of PoP
                 .build();
 
         checkAreaLocation = areaLocationQuery;
         String urlString = builtUri.toString().replace("%2C",","); //Transform for get char ","
-        Log.i(TAG, "Byron check Built urlString " + urlString);
+        Log.i(TAG, "check Built urlString " + urlString);
 
         return urlString;
     }
@@ -80,14 +80,10 @@ public class WeatherJsonUtility {
             return null;
         }
 
-        JSONArray elementArray = locationAreaInfo.getJSONArray(WEATHER_ELEMENT);//length is 4 T,Wx,MinT,MaxT
-        //Log.d(TAG,"element count"+elementArray.length());
+        JSONArray elementArray = locationAreaInfo.getJSONArray(WEATHER_ELEMENT);//length is 4 T,Wx,MinT,MaxT,PoP12h
+        Log.d(TAG,"element count ("+elementArray.length()+")");
         String[] elementName = new String[elementArray.length()];
 
-        JSONObject T_Object = elementArray.getJSONObject(0);
-        JSONObject Wx_Object = elementArray.getJSONObject(1);
-        JSONObject MinT_Object = elementArray.getJSONObject(2);
-        JSONObject MaxT_Object = elementArray.getJSONObject(3);
 
 
         /** time zone count are independent in elements, so we can choose any elements arbitrary **/
@@ -120,10 +116,9 @@ public class WeatherJsonUtility {
                      ]
                      },
                  **/
-                if(elementName[element].equals("T")||elementName[element].equals("MinT")||elementName[element].equals("MaxT")||elementName[element].equals("PoP")){
-                    totalData[time] = totalData[time] + "," + elementName[element] + "-" + valueArray.getJSONObject(0).getInt(VALUE);
-                }else if(elementName[element].equals("Wx")){
-                    totalData[time] = totalData[time] + "," + elementName[element] + "-" + valueArray.getJSONObject(0).getString(VALUE);
+
+                if(!valueArray.getJSONObject(0).get(VALUE).equals(" ")){
+                    totalData[time] = totalData[time] + "," + elementName[element] + "-" + valueArray.getJSONObject(0).get(VALUE);
                 }
 
 
@@ -139,9 +134,9 @@ public class WeatherJsonUtility {
                 getFirstTimeValue = true;
             }
         }
-        for(int i=0; i<elementArray.getJSONObject(0).getJSONArray(WEATHER_TIME).length();i++) {
-            Log.d(TAG, "Byron check totalData["+i+"] = "+totalData[i]);
-        }
+        /*for(int i=0; i<elementArray.getJSONObject(0).getJSONArray(WEATHER_TIME).length();i++) {
+            Log.d(TAG, "check totalData["+i+"] = "+totalData[i]);
+        }*/
         return totalData;
 
 
@@ -150,7 +145,7 @@ public class WeatherJsonUtility {
     public void selectWeatherDataFromLocation(String location){
         if(location.contains("台")){
             location = location.replace("台","臺");
-            Log.d(TAG,"Byron check selectWeatherDataFromLocation location = "+location);
+            Log.d(TAG,"check selectWeatherDataFromLocation location = "+location);
         }
         switch(location){
             case "宜蘭縣" :
@@ -224,7 +219,7 @@ public class WeatherJsonUtility {
             default:
         }
         checkCityLocation = location;
-        Log.d(TAG,"Byron check correct WEATHER_LOCATION_URL = "+WEATHER_LOCATION_URL);
+        Log.d(TAG,"select correct WEATHER_LOCATION_URL = "+WEATHER_LOCATION_URL);
 
     }
 
