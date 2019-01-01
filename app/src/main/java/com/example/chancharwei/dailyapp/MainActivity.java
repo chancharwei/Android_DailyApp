@@ -73,17 +73,28 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         int itemThatWasClickedId = item.getItemId();
         Intent featureIntent = new Intent();
-
-        if(itemThatWasClickedId == R.id.weather){
-            Log.i(TAG,"Select WeatherActivity feature ");
-            Context context = MainActivity.this;
-            featureIntent.setClass(context,WeatherActivity.class);
-            //String textToShow = "Search clicked";
-            //Toast.makeText(context, textToShow, Toast.LENGTH_SHORT).show();
-            startActivity(featureIntent);
-            finish();
-            return true;
+        Context context = MainActivity.this;
+        switch (itemThatWasClickedId){
+            case R.id.weather:
+                Log.i(TAG,"Select WeatherActivity feature ");
+                featureIntent.setClass(context,WeatherActivity.class);
+                //String textToShow = "Search clicked";
+                //Toast.makeText(context, textToShow, Toast.LENGTH_SHORT).show();
+                startActivity(featureIntent);
+                finish();
+                break;
+            case R.id.exchangeRate:
+                Log.i(TAG,"Select ExchangeRateActivity feature ");
+                featureIntent.setClass(context,ExchangeRateActivity.class);
+                startActivity(featureIntent);
+                finish();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+
+        return true;
+
+
     }
 }

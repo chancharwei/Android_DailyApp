@@ -92,7 +92,7 @@ public class GPSLocationManager {
         if(bestLocation == null){
             Log.d(TAG,"get bestLocation is null");
         }else{
-            mGPSLocation.onLocationChanged(bestLocation);
+            Log.i(TAG,"get bestLocation lat ("+bestLocation.getLatitude()+") lon ("+bestLocation.getLongitude()+")");            mGPSLocation.onLocationChanged(bestLocation);
         }
 
         Log.d(TAG,"startGPS X");

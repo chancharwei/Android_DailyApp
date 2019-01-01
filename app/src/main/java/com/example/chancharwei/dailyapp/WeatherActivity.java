@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -61,14 +62,10 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
     final static String TAG = WeatherActivity.class.getName();
     private RecyclerView mRecyclerView;
     private WeatherAdapter mWadapter;
-    private static String queryInfo;
     private static boolean parsingLocationInfoDone;     //parsing xml for location info latitude & longitude
     private static HashMap<String, double[]> locationInfo = null;
     private static final int WEATHER_QUERY_ID = 0;
     private static final int ABSOLUTE_LOCATION_QUERY_ID = 1;
-    private static final int START_DETECT_LOCATION_QUERY_ID = 2;
-    private static final String CITY_KEY = "cityKey";
-    private static final String AREA_KEY = "areaKey";
     private static final String WEATHERURL_KEY = "urlKey";
 
     private GoogleApiClient googleApiClient;
@@ -314,7 +311,7 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                         queryLocation = getLocationList.get(0);
                         Log.d(TAG,"get Location = "+queryLocation);
                     }else if(getLocationList.size() > 1){
-
+                        //TODO 花蓮縣花蓮市
                     }
                 }
             }
@@ -411,15 +408,27 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemThatWasClickedId = item.getItemId();
         Intent featureIntent = new Intent();
-        if(itemThatWasClickedId == android.R.id.home){
-            featureIntent.setClass(this,MainActivity.class);
-            startActivity(featureIntent);
-            finish();
-            return true;
-        }else if(itemThatWasClickedId == R.id.search){
+        switch (itemThatWasClickedId){
+            case android.R.id.home:
+                featureIntent.setClass(this,MainActivity.class);
+                startActivity(featureIntent);
+                finish();
+                break;
 
+            case R.id.exchangeRate:
+                featureIntent.setClass(this,ExchangeRateActivity.class);
+                startActivity(featureIntent);
+                finish();
+                break;
+            case R.id.search:
+                //if click search bar, this callback will trigger
+                mRecyclerView.setVisibility(View.INVISIBLE);
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+        return true;
+
     }
 
     @Override
@@ -493,9 +502,21 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                 @Override
                 public HashMap<String, double[]> loadInBackground() {
                     Log.i(TAG,"parsing location xml info");
-                    WeatherXmlUtility absoluteLocationParsing = new WeatherXmlUtility();
-                    HashMap<String, double[]> absoluteLocation = absoluteLocationParsing.loadXmlFromNetwork("http://download.post.gov.tw/post/download/1050812_%E8%A1%8C%E6%94%BF%E5%8D%80%E7%B6%93%E7%B7%AF%E5%BA%A6%28toPost%29.xml");
-                    return absoluteLocation;
+                    String info;
+                    try {
+                        URL locationInfoURL = new URL(WeatherXmlUtility.getLocationInfoXML());
+                        if (NetworkUtility.HttpCheckStatusWithURL(locationInfoURL)) {
+                            WeatherXmlUtility absoluteLocationParsing = new WeatherXmlUtility();
+                            HashMap<String, double[]> absoluteLocation = absoluteLocationParsing.loadXmlFromNetwork(locationInfoURL);
+                            return absoluteLocation;
+                        } else {
+                            Log.e(TAG, "Network Status Wrong");
+                        }
+
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    return null;
                 }
 
 
@@ -511,6 +532,7 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
         if(loader.getId() == WEATHER_QUERY_ID){
             if(data != null){
                 mWadapter.setWeatherData((String[])data);
+                mRecyclerView.setVisibility(View.VISIBLE);
             }
         }else if(loader.getId() == ABSOLUTE_LOCATION_QUERY_ID){
             if(data != null){

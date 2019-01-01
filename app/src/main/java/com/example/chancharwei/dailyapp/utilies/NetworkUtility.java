@@ -44,6 +44,10 @@ public class NetworkUtility {
         try{
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setUseCaches(false);
+            conn.setConnectTimeout(5000 /* milliseconds */);
+            conn.setReadTimeout(10000);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
             conn.connect();
             int status = conn.getResponseCode();
             conn.disconnect();

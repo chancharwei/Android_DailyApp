@@ -21,13 +21,18 @@ public class WeatherXmlUtility {
     private static final String ns = null;
     private static final String xml_1st_layer = "dataroot";
     private static final String xml_2nd_layer = "_x0031_050429_行政區經緯度_x0028_toPost_x0029_";
+    private static final String locationInfoXML = "http://download.post.gov.tw/post/download/1050812_%E8%A1%8C%E6%94%BF%E5%8D%80%E7%B6%93%E7%B7%AF%E5%BA%A6%28toPost%29.xml";
     public HashMap<String, double[]> absoluteLocation = null;
 
-    public HashMap<String, double[]> loadXmlFromNetwork (String urlString){
+    public static String getLocationInfoXML(){
+        return locationInfoXML;
+    }
+
+    public HashMap<String, double[]> loadXmlFromNetwork (URL url){
         InputStream stream = null;
         try{
             absoluteLocation = new HashMap<>();
-            stream = downloadUrl(urlString);
+            stream = downloadUrl(url);
             parse(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -38,12 +43,11 @@ public class WeatherXmlUtility {
         return absoluteLocation;
     }
 
-    private InputStream downloadUrl(String urlString) throws IOException {
-        URL url = new URL(urlString);
+    private InputStream downloadUrl(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setReadTimeout(10000 /* milliseconds */);
-        conn.setConnectTimeout(15000 /* milliseconds */);
-        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(5000 /* milliseconds */);
+        conn.setRequestMethod("GET");     //use "GET" by default
         conn.setDoInput(true);
         // Starts the query
         conn.connect();
