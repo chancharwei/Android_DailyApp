@@ -9,11 +9,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.parser.Parser;
-import org.jsoup.select.Elements;
-
 public class MainActivity extends AppCompatActivity {
     final String TAG = getClass().getName();
     @Override
