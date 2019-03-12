@@ -4,4 +4,18 @@
     <string name="menu_exchangeRate">EchangeRate</string>
     <string name="location">新北市,永和區</string>
     <string name="search_hint">Search location</string>
+    <string name="ex_date">日期</string>
+    <string name="ex_currency">幣別</string>
+    <string name="ex_cashBuyMax">現金匯率買入最大</string>
+    <string name="ex_cashBuyMin">現金匯率買入最小</string>
+    <string name="ex_cashSellMax">現金匯率賣出最大</string>
+    <string name="ex_cashSellMin">現金匯率賣出最小</string>
+    <string name="ex_spotBuyMax">即期匯率買入最大</string>
+    <string name="ex_spotBuyMin">即期匯率買入最小</string>
+    <string name="ex_spotSellMax">即期匯率賣出最大</string>
+    <string name="ex_spotSellMin">即期匯率賣出最小</string>
+    <string name="ex_cashBuy">現金匯率買入</string>
+    <string name="ex_cashSell">現金匯率賣出</string>
+    <string name="ex_spotBuy">即期匯率買入</string>
+    <string name="ex_spotSell">即期匯率賣出</string>
 </resources>

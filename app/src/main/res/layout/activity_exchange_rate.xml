@@ -7,13 +7,210 @@
     tools:context=".ExchangeRateActivity">
 
 
-    <TextView
-        android:id="@+id/test"
+    <Spinner
+        android:id="@+id/dateSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/calendar_view"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/calendar_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginEnd="40dp"
+        app:layout_constraintBottom_toTopOf="@+id/dateSpinner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner"
+        app:srcCompat="@drawable/ic_calendar" />
+
+    <ImageView
+        android:id="@+id/search_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/dateSpinner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner"
+        app:srcCompat="@drawable/ic_search" />
+
+    <!--<HorizontalScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="64dp"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner">
+
+        <TableLayout
+            android:id="@+id/exchangeRate_table"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></TableLayout>
+    </HorizontalScrollView>-->
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView_databse"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/horizontalScrollView_current"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner">
+
+        <TableLayout
+            android:id="@+id/search_exchangeRate_table"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TableRow
+                android:id="@+id/row_item">
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_date" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_currency" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_cashBuyMax" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_cashBuyMin" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_cashSellMax" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_cashSellMin" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_spotBuyMax" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_spotBuyMin" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_spotSellMax" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border_style"
+                    android:padding="6dp"
+                    android:text="@string/ex_spotSellMin" />
+
+            </TableRow>
+
+        </TableLayout>
+
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView_current"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner">
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+            <TableLayout
+                android:id="@+id/current_exchangeRate_table"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TableRow>
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style3"
+                        android:padding="6dp"
+                        android:text="@string/ex_date" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style3"
+                        android:padding="6dp"
+                        android:text="@string/ex_currency" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style3"
+                        android:padding="6dp"
+                        android:text="@string/ex_cashBuy" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style3"
+                        android:padding="6dp"
+                        android:text="@string/ex_cashSell" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style3"
+                        android:padding="6dp"
+                        android:text="@string/ex_spotBuy" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style3"
+                        android:padding="6dp"
+                        android:text="@string/ex_spotSell" />
+                </TableRow>
+            </TableLayout>
+        </ScrollView>
+
+    </HorizontalScrollView>
+
 </android.support.constraint.ConstraintLayout>

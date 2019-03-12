@@ -9,13 +9,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class ExchangeRateHTMLUtility {
     private static final String TAG = ExchangeRateHTMLUtility.class.getName();
-    private static final int PARSE_NUM_DATA_TABLE = 5;
+    public static final int PARSE_NUM_DATA_EACH_CURRENCY = 5;
     private String[] currencyTitle, currencyInfo = null;
-
+    private ArrayList<String> dataList = new ArrayList<>();
+    private static int numOfTypeCurrency = 0;
+    private String[] dateTime = null;
     public void parsingHTMLData(String url){
         Document exchangeRateDoc = null;
         try {
@@ -24,12 +27,22 @@ public class ExchangeRateHTMLUtility {
             e.printStackTrace();
         }
         //String doc = exchangeRateDoc.title();
+        Elements elements = exchangeRateDoc.body().select("p");
+        for(Element element : elements){
+            if(element.attr("class").toString().equals("text-info")){
+                Log.d(TAG,"Byron check 0 = "+element.select("span").get(1).text());
+                if(element.select("span").get(1).text() != null){
+                    dateTime = element.select("span").get(1).text().split(" ");
+                }
+            }
+        }
         Elements tr_table = exchangeRateDoc.body().select("tbody").select("tr");
-
-        currencyTitle = new String[PARSE_NUM_DATA_TABLE];
-        currencyInfo = new String[PARSE_NUM_DATA_TABLE];
+        numOfTypeCurrency = tr_table.size();
+        currencyTitle = new String[PARSE_NUM_DATA_EACH_CURRENCY];
+        currencyInfo = new String[PARSE_NUM_DATA_EACH_CURRENCY];
+        Log.d(TAG,"Byron check total size = "+PARSE_NUM_DATA_EACH_CURRENCY*tr_table.size());
         for(Element element : tr_table){
-            for(int i=0; i<PARSE_NUM_DATA_TABLE ;i++){
+            for(int i=0; i<PARSE_NUM_DATA_EACH_CURRENCY ;i++){
                 Element data = element.select("td").get(i);
                 currencyTitle[i] = data.attr("data-table");
                 if(data.select("div").size() != 0){
@@ -41,9 +54,21 @@ public class ExchangeRateHTMLUtility {
                 }else{
                     currencyInfo[i] = element.select("td").get(i).text();
                 }
+                dataList.add(currencyInfo[i]);
                 Log.d(TAG,"Title = "+ currencyTitle[i]+", Content = "+ currencyInfo[i]);
             }
         }
+    }
+    public ArrayList<String> getDataList(){
+        if(!dataList.isEmpty()){
+            return dataList;
+        }else{
+            return null;
+        }
+    }
+
+    public int getNumOfTypeCurrency(){
+        return numOfTypeCurrency;
     }
 
     public String[] getCurrencyTitle(){
@@ -60,6 +85,12 @@ public class ExchangeRateHTMLUtility {
         }else{
             return null;
         }
+    }
+
+    public String[] getDateTime() {
+        //dateTime[0] = 2019/01/22 (date)
+        //dateTime[1] = 16:00 (time)
+        return dateTime;
     }
 
 }
