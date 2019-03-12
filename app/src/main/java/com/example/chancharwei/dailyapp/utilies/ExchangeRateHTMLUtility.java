@@ -16,8 +16,7 @@ public class ExchangeRateHTMLUtility {
     private static final String TAG = ExchangeRateHTMLUtility.class.getName();
     public static final int PARSE_NUM_DATA_EACH_CURRENCY = 5;
     private String[] currencyTitle, currencyInfo = null;
-    private ArrayList<String> originalDataList = new ArrayList<>();
-    private ArrayList<Object> transformDoneDataList = new ArrayList<>();
+    private ArrayList<String> dataList = new ArrayList<>();
     private static int numOfTypeCurrency = 0;
     private String[] dateTime = null;
     public void parsingHTMLData(String url){
@@ -28,11 +27,6 @@ public class ExchangeRateHTMLUtility {
             e.printStackTrace();
         }
         //String doc = exchangeRateDoc.title();
-        if(exchangeRateDoc.body() == null){
-            Log.e(TAG,"Byron exchangeRateDoc body is null");
-        }else{
-            Log.e(TAG,"Byron exchangeRateDoc body is not null");
-        }
         Elements elements = exchangeRateDoc.body().select("p");
         for(Element element : elements){
             if(element.attr("class").toString().equals("text-info")){
@@ -60,44 +54,14 @@ public class ExchangeRateHTMLUtility {
                 }else{
                     currencyInfo[i] = element.select("td").get(i).text();
                 }
-                originalDataList.add(currencyInfo[i]);
+                dataList.add(currencyInfo[i]);
                 Log.d(TAG,"Title = "+ currencyTitle[i]+", Content = "+ currencyInfo[i]);
             }
         }
-        transformDoneDataList = transformData(originalDataList);
     }
-
-    private ArrayList<Object> transformData(ArrayList<String> dataList){
-        ArrayList<Object> afterTransformList = new ArrayList<>();
-        for(String list : dataList){
-            //Log.d(TAG,"Byron dataList index = "+dataList.indexOf(list)+" list = "+list);
-            if(dataList.indexOf(list) % 5 == 0){
-                //type of currency
-                afterTransformList.add(list);
-                //Log.d(TAG,"Byron currecny list = "+list);
-            }else if(dataList.indexOf(list) == dataList.indexOf("-")){
-                // -
-                afterTransformList.add(-1.0);
-                //Log.d(TAG,"Byron - list = "+list);
-            }else{
-                afterTransformList.add(Double.parseDouble(list));
-                //Log.d(TAG,"Byron others list = "+list);
-            }
-        }
-        return afterTransformList;
-    }
-
-    public ArrayList<Object> getTransformDoneDataList(){
-        if(!transformDoneDataList.isEmpty()){
-            return transformDoneDataList;
-        }else{
-            return null;
-        }
-    }
-
-    public ArrayList<String> getOriginalDataList(){
-        if(!originalDataList.isEmpty()){
-            return originalDataList;
+    public ArrayList<String> getDataList(){
+        if(!dataList.isEmpty()){
+            return dataList;
         }else{
             return null;
         }

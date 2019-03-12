@@ -8,9 +8,10 @@
 
 
     <Spinner
-        android:id="@+id/dateSpinner_needChange"
-        android:layout_width="252dp"
-        android:layout_height="28dp"
+        android:id="@+id/dateSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toStartOf="@+id/calendar_view"
@@ -20,22 +21,22 @@
 
     <ImageView
         android:id="@+id/calendar_view"
-        android:layout_width="33dp"
-        android:layout_height="28dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toStartOf="@+id/search_view"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="40dp"
+        app:layout_constraintBottom_toTopOf="@+id/dateSpinner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner"
         app:srcCompat="@drawable/ic_calendar" />
 
     <ImageView
         android:id="@+id/search_view"
-        android:layout_width="33dp"
-        android:layout_height="28dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/dateSpinner"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner"
         app:srcCompat="@drawable/ic_search" />
 
     <!--<HorizontalScrollView
@@ -54,21 +55,20 @@
         android:id="@+id/horizontalScrollView_databse"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginBottom="64dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/horizontalScrollView_current"
-        app:layout_constraintTop_toBottomOf="@+id/dateSpinner_needChange">
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner">
 
         <TableLayout
             android:id="@+id/search_exchangeRate_table"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TableRow android:id="@+id/row_item">
+            <TableRow
+                android:id="@+id/row_item">
 
                 <TextView
                     android:layout_width="fill_parent"
@@ -150,21 +150,15 @@
         android:id="@+id/horizontalScrollView_current"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginBottom="64dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dateSpinner_needChange">
-
+        app:layout_constraintTop_toBottomOf="@+id/dateSpinner">
         <ScrollView
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="226dp">
-
+            android:layout_height="fill_parent">
             <TableLayout
                 android:id="@+id/current_exchangeRate_table"
                 android:layout_width="match_parent"
@@ -218,29 +212,5 @@
         </ScrollView>
 
     </HorizontalScrollView>
-
-    <ImageView
-        android:id="@+id/coin_view"
-        android:layout_width="58dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/horizontalScrollView_current"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/ic_coin" />
-
-    <ProgressBar
-        android:id="@+id/progressBar_Loading"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
 
 </android.support.constraint.ConstraintLayout>

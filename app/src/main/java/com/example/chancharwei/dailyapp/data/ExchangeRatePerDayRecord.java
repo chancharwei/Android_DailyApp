@@ -53,11 +53,11 @@ public class ExchangeRatePerDayRecord {
     public void close(){
         db.close();
     }
-    public long insert(ExchangeRateTableData data){
+    public ExchangeRateTableData insert(ExchangeRateTableData data){
         ContentValues cv = setDataToDataBase(data);
         long id = db.insert(TABLE_NAME,null,cv);
         data.setId(id);
-        return id;
+        return data;
     }
 
     public boolean update(ExchangeRateTableData data){
