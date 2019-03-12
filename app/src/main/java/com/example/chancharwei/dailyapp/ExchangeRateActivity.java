@@ -1,12 +1,16 @@
 package com.example.chancharwei.dailyapp;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -35,62 +40,81 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static java.lang.Thread.*;
+
 public class ExchangeRateActivity extends AppCompatActivity {
-    final static String TAG = ExchangeRateActivity.class.getName();
+    private final static String TAG = ExchangeRateActivity.class.getName();
     private static final String TAIWAN_BANK_EXCHANGERATE = "https://rate.bot.com.tw/xrt?Lang=zh-TW";
-    private ExchangeRatePerDayRecord exchangeRatePerDayRecord = null;
-    private ExchangeRateHTMLUtility exchangeRateHTMLUtility;
-    private SharedPreferences preference;
+    private SharedPreferences exchangeRatePreference;
     private Spinner currencySpinner;
+    private final String spinnerFistItem = "Currency";
     private Handler updateUIHandler;
     private String[] currencyType;
     private String selectedDate = null,selectedCurrency = null;
     private ServiceHandleWork serviceHandleWork;
     private final int WORK_GETDATA_TO_DATABASE = 1,WORK_SEARCHDATA_FROM_DATABASE = 2; //WORK CONTENT IN NEW THREAD
     private final int UPDATE_UI_CURRENT_EXCHANGERATE= 1,UPDATE_UI_SPINNER_CURRENCY = 2,UPDATE_UI_SEARCH_EXCHANGERATE = 3;
+    private final int numDataEachCurrency = ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;
     HorizontalScrollView horizontalScrollView_database;
     HorizontalScrollView horizontalScrollView_current;
-    String dateTime;
+    ImageView calendar_view,search_view,coin_view;
+    ProgressBar progressBar_Loading;
+    private String[] recordCurrentData;
+    private String dateTime,clockTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG,"onCreate");
+        Log.d(TAG,"Byron check time onCreate "+SystemClock.elapsedRealtime());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exchange_rate);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ImageView calendar_view = (ImageView) findViewById(R.id.calendar_view);
+        progressBar_Loading = findViewById(R.id.progressBar_Loading);
+        progressBar_Loading.setVisibility(View.VISIBLE);
+        calendar_view = findViewById(R.id.calendar_view);
         calendar_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 calendarFeature();
             }
         });
-        ImageView search_view = (ImageView) findViewById(R.id.search_view);
+        calendar_view.setVisibility(View.INVISIBLE);
+        search_view = findViewById(R.id.search_view);
         search_view.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 //reset table first +++
                 TableLayout tableLayout = findViewById(R.id.search_exchangeRate_table);
                 TableRow tableRow = findViewById(R.id.row_item);
+                if(selectedDate == null && selectedCurrency == null){
+                    return;
+                }
                 tableLayout.removeAllViews();
                 tableLayout.addView(tableRow,new TableLayout.LayoutParams(TableLayout.LayoutParams.FILL_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
                 //reset table first ---
                 searchDataFromDataBase();
-                currencySpinner.setSelection(0);
             }
         });
+        search_view.setVisibility(View.INVISIBLE);
+        coin_view = (ImageView) findViewById(R.id.coin_view);
+        coin_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startMonitorExRate();
+            }
+        });
+        coin_view.setVisibility(View.INVISIBLE);
         horizontalScrollView_database = (HorizontalScrollView) findViewById(R.id.horizontalScrollView_databse);
         horizontalScrollView_current = (HorizontalScrollView) findViewById(R.id.horizontalScrollView_current);
         horizontalScrollView_database.setVisibility(View.INVISIBLE);
         horizontalScrollView_current.setVisibility(View.INVISIBLE);
-        preference = getSharedPreferences("exchangeRate", MODE_PRIVATE);
-        currencySpinner = findViewById(R.id.dateSpinner);
+        exchangeRatePreference = getSharedPreferences("exchangeRate", MODE_PRIVATE);
+        currencySpinner = findViewById(R.id.dateSpinner_needChange);
         currencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 Log.d(TAG,"Byron selected ->"+currencyType[position]);
                 selectedCurrency = currencyType[position];
-                if(selectedCurrency.equals("select currency")){
+                if(selectedCurrency.equals(spinnerFistItem)){
                     selectedCurrency = null;
                 }
             }
@@ -100,7 +124,86 @@ public class ExchangeRateActivity extends AppCompatActivity {
                 Log.d(TAG,"Byron nothing select");
             }
         });
-        searchExchangeRate();
+        currencySpinner.setVisibility(View.INVISIBLE);
+        prepareServiceWork();
+        if(needUpdateData()){
+            searchExchangeRate();
+        }else{
+            updateUIwithSaveData();
+        }
+        triggerAlarmManager();
+    }
+
+    //prepare for let job do in other thread +++
+    private void prepareServiceWork(){
+        serviceHandleWork = new ServiceHandleWork();
+
+        updateUIHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.getData().getInt("updateID")){
+                    case UPDATE_UI_CURRENT_EXCHANGERATE:
+                        String[] current_data = msg.getData().getStringArrayList("currentExchangeRate").toArray(new String[msg.getData().getStringArrayList("currentExchangeRate").size()]);
+                        showCurrentDataInTable(current_data);
+                        break;
+                    case UPDATE_UI_SPINNER_CURRENCY:
+                        currencyType = msg.getData().getStringArrayList("currencyType").toArray(new String[msg.getData().getStringArrayList("currencyType").size()]);
+                        ArrayAdapter<String> lunchList = new ArrayAdapter<>(ExchangeRateActivity.this,
+                                android.R.layout.simple_spinner_dropdown_item,
+                                currencyType);
+                        currencySpinner.setAdapter(lunchList);
+                        break;
+                    case UPDATE_UI_SEARCH_EXCHANGERATE:
+                        String[] search_data = msg.getData().getStringArrayList("searchExchangeRate").toArray(new String[msg.getData().getStringArrayList("searchExchangeRate").size()]);
+                        showSearchDataInTable(search_data);
+                        //currencySpinner.setSelection(0);
+                        break;
+                    default:
+                        //do nothing
+                }
+
+                super.handleMessage(msg);
+            }
+        };
+    }
+    //prepare for let job do in other thread ---
+
+    private boolean needUpdateData(){
+        boolean needUpdateData;
+        long lastStartTime = exchangeRatePreference.getLong("lastStartActivityTime",0);
+        long nowTime = SystemClock.elapsedRealtime();
+        if(nowTime - lastStartTime < 1000*60*5){
+            needUpdateData = false;
+        }else{
+            needUpdateData = true;
+        }
+        exchangeRatePreference.edit().putLong("lastStartActivityTime",nowTime).commit();
+        return needUpdateData;
+    }
+
+    private void updateUIwithSaveData(){
+        ArrayList<String> exchangeRateDataList = new ArrayList<>();
+
+        for(int i = 0; i< exchangeRatePreference.getInt("exchangeRateData_numData",0); i++){
+            exchangeRateDataList.add(exchangeRatePreference.getString("exchangeRateData_"+i,"null"));
+            //Log.d(TAG,"Byron check get index = "+data);
+        }
+        dateTime = exchangeRatePreference.getString("recordDateTime","yyyy/MM/dd");
+        updateUI(UPDATE_UI_CURRENT_EXCHANGERATE,exchangeRateDataList);
+
+        ArrayList<String> spinnerDataList = new ArrayList<>();
+        for(int i = 0; i< exchangeRatePreference.getInt("spinnerData_numData",0); i++){
+            spinnerDataList.add(exchangeRatePreference.getString("spinnerData_"+i,"null"));
+        }
+
+        updateUI(UPDATE_UI_SPINNER_CURRENCY,spinnerDataList);
+    }
+    public void triggerAlarmManager(){
+        Intent intent = new Intent();
+        intent.setClass(this,MonitorReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this,0,intent,0);
+        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        alarm.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, 60000/*SystemClock.elapsedRealtime()+AlarmManager.INTERVAL_FIFTEEN_MINUTES*/,pendingIntent);
     }
 
     private void calendarFeature(){
@@ -174,21 +277,23 @@ public class ExchangeRateActivity extends AppCompatActivity {
     }
 
     private void showCurrentDataInTable(final String[] data){
+        recordCurrentData = data;
         TableLayout tableLayout = (TableLayout)findViewById(R.id.current_exchangeRate_table);
-        for(int i=0;i<data.length/ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;i++){
+        for(int i=0;i<data.length/numDataEachCurrency;i++){
             TableRow tableRow = new TableRow(this);
             tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.FILL_PARENT,TableRow.LayoutParams.MATCH_PARENT));
             TextView textView_date = new TextView(this);
+
             textView_date.setText(dateTime);
             textView_date.setBackground(getResources().getDrawable(R.drawable.border_style2));
             tableRow.addView(textView_date);
-            for(int j=i*ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;j<i*ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY+ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;j++){
+            for(int j=i*numDataEachCurrency;j<i*numDataEachCurrency+numDataEachCurrency;j++){
                 TextView textView = new TextView(this);
                 textView.setText(data[j]);
                 textView.setBackground(getResources().getDrawable(R.drawable.border_style2));
                 tableRow.addView(textView);
             }
-            final int selectCurrency =i*ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;
+            final int selectCurrency =i*numDataEachCurrency;
             tableRow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -201,36 +306,13 @@ public class ExchangeRateActivity extends AppCompatActivity {
         }
         horizontalScrollView_database.setVisibility(View.INVISIBLE);
         horizontalScrollView_current.setVisibility(View.VISIBLE);
+        currencySpinner.setVisibility(View.VISIBLE);
+        calendar_view.setVisibility(View.VISIBLE);
+        search_view.setVisibility(View.VISIBLE);
+        coin_view.setVisibility(View.VISIBLE);
+        progressBar_Loading.setVisibility(View.INVISIBLE);
     }
-    public void searchExchangeRate(){
-        serviceHandleWork = new ServiceHandleWork();
-
-        updateUIHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.getData().getInt("updateID")){
-                    case UPDATE_UI_CURRENT_EXCHANGERATE:
-                        String[] current_data = msg.getData().getStringArrayList("currentExchangeRate").toArray(new String[msg.getData().getStringArrayList("currentExchangeRate").size()]);
-                        showCurrentDataInTable(current_data);
-                        break;
-                    case UPDATE_UI_SPINNER_CURRENCY:
-                        currencyType = msg.getData().getStringArrayList("currencyType").toArray(new String[msg.getData().getStringArrayList("currencyType").size()]);
-                        ArrayAdapter<String> lunchList = new ArrayAdapter<>(ExchangeRateActivity.this,
-                                android.R.layout.simple_spinner_dropdown_item,
-                                currencyType);
-                        currencySpinner.setAdapter(lunchList);
-                        break;
-                    case UPDATE_UI_SEARCH_EXCHANGERATE:
-                        String[] search_data = msg.getData().getStringArrayList("searchExchangeRate").toArray(new String[msg.getData().getStringArrayList("searchExchangeRate").size()]);
-                        showSearchDataInTable(search_data);
-                        break;
-                    default:
-                        //do nothing
-                }
-
-                super.handleMessage(msg);
-            }
-        };
+    private void searchExchangeRate(){
 
         new Thread(new Runnable() {
             @Override
@@ -259,13 +341,11 @@ public class ExchangeRateActivity extends AppCompatActivity {
                 try {
                     URL exchangeRateURL = new URL(TAIWAN_BANK_EXCHANGERATE);
                     if (NetworkUtility.HttpCheckStatusWithURL(exchangeRateURL)) {
-                        exchangeRateHTMLUtility = new ExchangeRateHTMLUtility();
+                        ExchangeRateHTMLUtility exchangeRateHTMLUtility = new ExchangeRateHTMLUtility();
                         exchangeRateHTMLUtility.parsingHTMLData(TAIWAN_BANK_EXCHANGERATE);
 
                         if(exchangeRateHTMLUtility.getCurrencyTitle()!=null && exchangeRateHTMLUtility.getCurrencyInfo() != null){
-                            //save to database
-
-                            showAndRecordExchangeRate(exchangeRateHTMLUtility.getDataList());
+                            showAndRecordExchangeRate(exchangeRateHTMLUtility);
                         }
                     }else {
                         Log.e(TAG, "Network Status Wrong");
@@ -275,7 +355,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
                 }
                 break;
             case WORK_SEARCHDATA_FROM_DATABASE:
-                //exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,true);
+                ExchangeRatePerDayRecord exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,true);
                 Log.d(TAG,"Byron Searchdate = "+selectedDate+" currency = "+selectedCurrency);
 
                 if(selectedDate == null && selectedCurrency != null){
@@ -286,7 +366,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
                     for(ExchangeRateTableData exchangeRateTableData : dataArrayList){
                         updateUIfromDataBase(exchangeRateTableData);
                     }
-                    selectedCurrency = null;
+                    //selectedCurrency = null;
                 }else if(selectedDate != null && selectedCurrency == null){
                     ArrayList<ExchangeRateTableData> dataArrayList = exchangeRatePerDayRecord.queryDateOrCurrency(selectedDate,selectedCurrency);
                     if(dataArrayList == null){
@@ -296,10 +376,10 @@ public class ExchangeRateActivity extends AppCompatActivity {
                         updateUIfromDataBase(exchangeRateTableData);
                     }
                     selectedDate = null;
-                }else{
+                }else if(selectedDate != null && selectedCurrency != null){
                     ExchangeRateTableData exchangeRateTableData = exchangeRatePerDayRecord.queryByDateAndCurrency(selectedDate,selectedCurrency);
                     updateUIfromDataBase(exchangeRateTableData);
-                    selectedCurrency = null;
+                    //selectedCurrency = null;
                     selectedDate = null;
                 }
                 break;
@@ -330,76 +410,139 @@ public class ExchangeRateActivity extends AppCompatActivity {
         }
 
     }
-    private void showAndRecordExchangeRate(ArrayList<String> dataList){
-        exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,false);
-
-        ArrayList<Object> afterTransformList = transformData(dataList);
+    private void showAndRecordExchangeRate(ExchangeRateHTMLUtility exchangeRateHTMLUtility){
+        ExchangeRatePerDayRecord exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,false);
+        ArrayList<Object> dataList = exchangeRateHTMLUtility.getTransformDoneDataList();
+        long updateRowID = -1,updateStartRowID = -1,updateEndRowID = -1;
         boolean setNewDataForNewDay;
         if(exchangeRateHTMLUtility.getDateTime() != null){
             dateTime = exchangeRateHTMLUtility.getDateTime()[0];
+            clockTime = exchangeRateHTMLUtility.getDateTime()[1];
         }
-        updateUIInfo(UPDATE_UI_CURRENT_EXCHANGERATE,dataList);
-        Log.d(TAG,"lastDateTime = "+getSharedPreferences("exchangeRate", MODE_PRIVATE).getString("recordDateTime","yyyy/MM/dd")+" dateTime = "+dateTime);
-        if(getSharedPreferences("exchangeRate", MODE_PRIVATE).getString("recordDateTime","yyyy/MM/dd").equals(dateTime)){
+
+        if(exchangeRateHTMLUtility.getOriginalDataList()!=null){
+            updateUIInfo(UPDATE_UI_CURRENT_EXCHANGERATE,exchangeRateHTMLUtility.getOriginalDataList());
+            saveData(UPDATE_UI_CURRENT_EXCHANGERATE,exchangeRateHTMLUtility.getOriginalDataList());
+        }
+
+        Log.d(TAG,"lastDateTime = "+ exchangeRatePreference.getString("recordDateTime","yyyy/MM/dd")+" dateTime = "+dateTime);
+        if(exchangeRatePreference.getString("recordDateTime","yyyy/MM/dd").equals(dateTime)){
             setNewDataForNewDay = false;
+            if(exchangeRatePreference.getString("recordClockTime","hh:mm").equals(clockTime)){
+                ArrayList<String> spinnerDataList = new ArrayList<>();
+                for(int i = 0; i< exchangeRatePreference.getInt("spinnerData_numData",0); i++){
+                    spinnerDataList.add(exchangeRatePreference.getString("spinnerData_"+i,"null"));
+                }
+                updateUIInfo(UPDATE_UI_SPINNER_CURRENCY,spinnerDataList);
+                Log.i(TAG,"same data with time ("+dateTime+","+clockTime+")");
+                return;
+            }else{
+                if(exchangeRateHTMLUtility.getDateTime() != null){
+                    exchangeRatePreference.edit().putString("recordClockTime",clockTime).commit();
+                }
+            }
         }else{
             setNewDataForNewDay = true;
-            preference.edit().putString("recordDateTime",dateTime).commit();
+            exchangeRatePreference.edit().putString("recordDateTime",dateTime).commit();
         }
+
+        if(!setNewDataForNewDay){
+            updateStartRowID = exchangeRatePreference.getLong("singleDayStartRowID", (long) -1);
+            updateEndRowID = exchangeRatePreference.getLong("singleDayEndRowID", (long) -1);
+            updateRowID = updateStartRowID;
+        }
+
+
         ArrayList<String> currencyTypeList = new ArrayList<>();
         for(int currency=0;currency<exchangeRateHTMLUtility.getNumOfTypeCurrency();currency++){
             ExchangeRateTableData data = new ExchangeRateTableData();
             data.setDateTime(dateTime);
 
-            for(int j=currency*ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;
-                j<currency*ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY+ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;
-                j++){
-                switch(j%ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY){
-                    case 0: //currency type
-                        data.setCurrency((String)afterTransformList.get(j));
-                        currencyTypeList.add((String)afterTransformList.get(j));
-                        break;
-                    case 1: //CashRateBuy
-                        data.setCashRateBuyMax((Double)afterTransformList.get(j));
-                        data.setCashRateBuyMin((Double)afterTransformList.get(j));
-                        break;
-                    case 2: //CashRateSell
-                        data.setCashRateSellMax((Double)afterTransformList.get(j));
-                        data.setCashRateSellMin((Double)afterTransformList.get(j));
-                        break;
-                    case 3: //SpotRateBuy
-                        data.setSpotRateBuyMax((Double)afterTransformList.get(j));
-                        data.setSpotRateBuyMin((Double)afterTransformList.get(j));
-                        break;
-                    case 4: //SpotRateSell
-                        data.setSpotRateSellMax((Double)afterTransformList.get(j));
-                        data.setSpotRateSellMin((Double)afterTransformList.get(j));
-                        break;
+            for(int j=currency*numDataEachCurrency;j<currency*numDataEachCurrency+numDataEachCurrency;j++){
+                if(j%numDataEachCurrency == 0){
+                    currencyTypeList.add((String)dataList.get(j));
                 }
+                data.assignMappingData(j,j%numDataEachCurrency,dataList);
             }
 
 
             if(setNewDataForNewDay){
-                data = exchangeRatePerDayRecord.insert(data);
-                preference.edit().putLong("perDateDataBase_"+currency,data.getId()).commit();
-                Log.d(TAG,"get("+currency+") id = "+data.getId());
+                long rowID = exchangeRatePerDayRecord.insert(data);
+                if(currency == 0){
+                    exchangeRatePreference.edit().putLong("singleDayStartRowID",rowID).commit();
+                }else if(currency == exchangeRateHTMLUtility.getNumOfTypeCurrency()-1){
+                    exchangeRatePreference.edit().putLong("singleDayEndRowID",rowID).commit();
+                }
+                exchangeRatePreference.edit().putLong("perDateDataBase_"+currency,rowID).commit();
+                Log.d(TAG,"get("+currency+") id = "+rowID);
             }else{
-                boolean value = updateNewData(currency,data);
-                Log.d(TAG,"Byron check update success ? = "+value);
-                exchangeRatePerDayRecord.queryByDateAndCurrency(data.getDateTime(),data.getCurrency());
-                //exchangeRatePerDayRecord.update(data);
+                if(updateRowID<=updateEndRowID) {
+                    ExchangeRateTableData originalData = exchangeRatePerDayRecord.queryByID(updateRowID);
+                    boolean needUpdate = data.needUpdateNewData(originalData);
+                    if(needUpdate){
+                        boolean updateDataSuccess = exchangeRatePerDayRecord.update(originalData);
+                        if(!updateDataSuccess){
+                            Log.w(TAG,"update this row failed, rowID("+originalData.getId()+")");
+                        }
+                    }else{
+                        Log.d(TAG,"no need to update DataBase id("+updateRowID+") currency ("+originalData.getCurrency()+")");
+                    }
+                    updateRowID++;
+                }
             }
 
         }
-        //exchangeRatePerDayRecord.queryAllData();
         if(currencyTypeList.size()!=0){
-            currencyTypeList.add(0,"select currency");
+            currencyTypeList.add(0,spinnerFistItem);
             updateUIInfo(UPDATE_UI_SPINNER_CURRENCY,currencyTypeList);
+            saveData(UPDATE_UI_SPINNER_CURRENCY,currencyTypeList);
         }
 
     }
 
+    private void saveData(int updateID,ArrayList<String> dataList){
+        int numData = dataList.size();
+        switch (updateID){
+            case UPDATE_UI_CURRENT_EXCHANGERATE:
+                exchangeRatePreference.edit().putInt("exchangeRateData_numData",numData).commit();
+                for(int i=0;i<dataList.size();i++){
+                    exchangeRatePreference.edit().putString("exchangeRateData_"+i,dataList.get(i)).commit();
+                }
+                break;
+            case UPDATE_UI_SPINNER_CURRENCY:
+                exchangeRatePreference.edit().putInt("spinnerData_numData",numData).commit();
+                for(int i=0;i<dataList.size();i++){
+                    exchangeRatePreference.edit().putString("spinnerData_"+i,dataList.get(i)).commit();
+                }
+                break;
+
+        }
+    }
+
+    private void updateUI(int updateID,ArrayList<String> dataList){
+        switch (updateID) {
+            case UPDATE_UI_CURRENT_EXCHANGERATE:
+                String[] current_data = dataList.toArray(new String[dataList.size()]);
+                showCurrentDataInTable(current_data);
+                break;
+            case UPDATE_UI_SPINNER_CURRENCY:
+                currencyType = dataList.toArray(new String[dataList.size()]);
+                ArrayAdapter<String> lunchList = new ArrayAdapter<>(ExchangeRateActivity.this,
+                        android.R.layout.simple_spinner_dropdown_item,
+                        currencyType);
+                currencySpinner.setAdapter(lunchList);
+                break;
+            case UPDATE_UI_SEARCH_EXCHANGERATE:
+                //do nothing
+                break;
+            default:
+                //do nothing
+        }
+    }
     private void updateUIInfo(int updateID,Object settingObject){
+        if(settingObject == null){
+            return;
+        }
         Bundle newBundle = new Bundle();
         newBundle.putInt("updateID",updateID);
         Message msg = new Message();
@@ -418,87 +561,26 @@ public class ExchangeRateActivity extends AppCompatActivity {
         updateUIHandler.sendMessage(msg);
     }
 
-    private boolean updateNewData(int currency,ExchangeRateTableData newData){
-        boolean needUpdate = false;
-        Log.d(TAG,"check currency = "+currency+" newData = "+getSharedPreferences("exchangeRate", MODE_PRIVATE).getLong("perDateDataBase_"+currency, (long) -1));
-        long getSaveId = getSharedPreferences("exchangeRate", MODE_PRIVATE).getLong("perDateDataBase_"+currency, (long) -1);
-        if(getSaveId == -1){
-            Log.d(TAG,"Didn't save mapping id");
-            return false;
+    private void startMonitorExRate(){
+        Intent startIntent = new Intent();
+        if(selectedCurrency != null){
+            startIntent.putExtra("currency",selectedCurrency);
         }
 
-        ExchangeRateTableData queryDataFromDataBase = exchangeRatePerDayRecord.queryByID(getSaveId);
-        if(queryDataFromDataBase != null){
-            Log.d(TAG,queryDataFromDataBase.getCashRateBuyMax()+","+queryDataFromDataBase.getCurrency()+","+queryDataFromDataBase.getCashRateBuyMax());
-
-            if(queryDataFromDataBase.getCashRateBuyMax() < newData.getCashRateBuyMax()){
-                queryDataFromDataBase.setCashRateBuyMax(newData.getCashRateBuyMax());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getCashRateBuyMin() > newData.getCashRateBuyMin()){
-                queryDataFromDataBase.setCashRateBuyMin(newData.getCashRateBuyMin());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getCashRateSellMax() < newData.getCashRateSellMax()){
-                queryDataFromDataBase.setCashRateSellMax(newData.getCashRateSellMax());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getCashRateSellMin() > newData.getCashRateSellMin()){
-                queryDataFromDataBase.setCashRateSellMin(newData.getCashRateSellMin());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getSpotRateBuyMax() < newData.getSpotRateBuyMax()){
-                queryDataFromDataBase.setSpotRateBuyMax(newData.getSpotRateBuyMax());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getSpotRateBuyMin() > newData.getSpotRateBuyMin()){
-                queryDataFromDataBase.setSpotRateBuyMin(newData.getSpotRateBuyMin());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getSpotRateSellMax() < newData.getSpotRateSellMax()){
-                queryDataFromDataBase.setSpotRateSellMax(newData.getSpotRateSellMax());
-                needUpdate = true;
-            }
-
-            if(queryDataFromDataBase.getSpotRateSellMin() > newData.getSpotRateSellMin()){
-                queryDataFromDataBase.setSpotRateSellMin(newData.getSpotRateSellMin());
-                needUpdate = true;
-            }
-
-            if(needUpdate){
-                return exchangeRatePerDayRecord.update(queryDataFromDataBase);
-            }else{
-                Log.e(TAG,"no need to update DataBase id("+getSaveId+") currency ("+queryDataFromDataBase.getCurrency()+")");
-                return false;
-            }
+        if(currencyType.length!=0){
+            startIntent.putExtra("currencyType",currencyType);
         }
-        return false;
-    }
 
-    private ArrayList<Object> transformData(ArrayList<String> dataList){
-        ArrayList<Object> afterTransformList = new ArrayList<>();
-        for(String list : dataList){
-            //Log.d(TAG,"Byron dataList index = "+dataList.indexOf(list)+" list = "+list);
-            if(dataList.indexOf(list) % 5 == 0){
-                //type of currency
-                afterTransformList.add(list);
-                //Log.d(TAG,"Byron currecny list = "+list);
-            }else if(dataList.indexOf(list) == dataList.indexOf("-")){
-                // -
-                afterTransformList.add(-1.0);
-                //Log.d(TAG,"Byron - list = "+list);
-            }else{
-                afterTransformList.add(Double.parseDouble(list));
-                //Log.d(TAG,"Byron others list = "+list);
-            }
+        if(recordCurrentData.length!=0){
+            startIntent.putExtra("currentData",recordCurrentData);
         }
-        return afterTransformList;
+        dateTime = exchangeRatePreference.getString("recordDateTime","yyyy/mm/dd");
+        clockTime = exchangeRatePreference.getString("recordClockTime","hh:mm");
+        if(!dateTime.equals("yyyy/mm/dd") && !clockTime.equals("hh:mm")){
+            startIntent.putExtra("updateTime",dateTime.concat(","+clockTime));
+        }
+        startIntent.setClass(this, MonitorExRateActivity.class);
+        startActivity(startIntent);
     }
 
     @Override
@@ -607,7 +689,7 @@ class WorkerThreadPool{
         workerThread.start();
         workerThreads.add(workerThread);
         try {
-            Thread.sleep(1000);
+            sleep(1000);
         }catch (InterruptedException e){
             e.printStackTrace();
         }
