@@ -1,7 +1,17 @@
 package com.example.chancharwei.dailyapp.data;
 
-public class ExchangeRateTableData {
+import android.content.Context;
+import android.util.Log;
 
+import com.example.chancharwei.dailyapp.ExchangeRateActivity;
+import com.example.chancharwei.dailyapp.utilies.ExchangeRateHTMLUtility;
+
+import java.util.ArrayList;
+
+public class ExchangeRateTableData {
+    private static final String TAG = ExchangeRateTableData.class.getName();
+    private ExchangeRateActivity mActivity;
+    ArrayList<String> currencyTypeList = new ArrayList<>();
     private long rowId = 0;
     private String dateTime = "yyyy/MM/dd";
     private String currency = "TWD";
@@ -84,5 +94,80 @@ public class ExchangeRateTableData {
         spotRateSellMin = value;
     }
 
+
+    public void assignMappingData(int dataFromList,int selectDataPart,ArrayList<Object> dataList){
+        switch(selectDataPart){
+            case 0: //currency type
+                setCurrency((String)dataList.get(dataFromList));
+                break;
+            case 1: //CashRateBuy
+                setCashRateBuyMax((Double)dataList.get(dataFromList));
+                setCashRateBuyMin((Double)dataList.get(dataFromList));
+                break;
+            case 2: //CashRateSell
+                setCashRateSellMax((Double)dataList.get(dataFromList));
+                setCashRateSellMin((Double)dataList.get(dataFromList));
+                break;
+            case 3: //SpotRateBuy
+                setSpotRateBuyMax((Double)dataList.get(dataFromList));
+                setSpotRateBuyMin((Double)dataList.get(dataFromList));
+                break;
+            case 4: //SpotRateSell
+                setSpotRateSellMax((Double)dataList.get(dataFromList));
+                setSpotRateSellMin((Double)dataList.get(dataFromList));
+                break;
+        }
+    }
+
+    public boolean needUpdateNewData(ExchangeRateTableData originalData){
+        boolean needUpdate = false;
+
+        if(originalData != null){
+            Log.d(TAG,originalData.getCashRateBuyMax()+","+originalData.getCurrency()+","+originalData.getCashRateBuyMax());
+
+            if(originalData.getCashRateBuyMax() < this.getCashRateBuyMax()){
+                originalData.setCashRateBuyMax(this.getCashRateBuyMax());
+                needUpdate = true;
+            }
+
+            if(originalData.getCashRateBuyMin() > this.getCashRateBuyMin()){
+                originalData.setCashRateBuyMin(this.getCashRateBuyMin());
+                needUpdate = true;
+            }
+
+            if(originalData.getCashRateSellMax() < this.getCashRateSellMax()){
+                originalData.setCashRateSellMax(this.getCashRateSellMax());
+                needUpdate = true;
+            }
+
+            if(originalData.getCashRateSellMin() > this.getCashRateSellMin()){
+                originalData.setCashRateSellMin(this.getCashRateSellMin());
+                needUpdate = true;
+            }
+
+            if(originalData.getSpotRateBuyMax() < this.getSpotRateBuyMax()){
+                originalData.setSpotRateBuyMax(this.getSpotRateBuyMax());
+                needUpdate = true;
+            }
+
+            if(originalData.getSpotRateBuyMin() > this.getSpotRateBuyMin()){
+                originalData.setSpotRateBuyMin(this.getSpotRateBuyMin());
+                needUpdate = true;
+            }
+
+            if(originalData.getSpotRateSellMax() < this.getSpotRateSellMax()){
+                originalData.setSpotRateSellMax(this.getSpotRateSellMax());
+                needUpdate = true;
+            }
+
+            if(originalData.getSpotRateSellMin() > this.getSpotRateSellMin()){
+                originalData.setSpotRateSellMin(this.getSpotRateSellMin());
+                needUpdate = true;
+            }
+
+            return needUpdate;
+        }
+        return false;
+    }
 
 }
