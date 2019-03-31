@@ -19,10 +19,7 @@ public class MyDBHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG,"onCreate");
-        if(MyDBHelper.tableName.equals(ExchangeRatePerDayRecord.TABLE_NAME)){
-            db.execSQL(ExchangeRatePerDayRecord.CREATE_TABLE);
-            Log.d(TAG,"check createTable command = "+ExchangeRatePerDayRecord.CREATE_TABLE);
-        }
+        createTable(db);
     }
 
     @Override
@@ -30,7 +27,20 @@ public class MyDBHelper extends SQLiteOpenHelper{
         Log.d(TAG,"onUpgrade");
     }
 
-    public static SQLiteDatabase getDataBase(Context context,String dataBaseName,String tableName,boolean isRead){
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        Log.d(TAG,"onOpen");
+        createTable(db);
+        super.onOpen(db);
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        Log.d(TAG,"onConfigure");
+        super.onConfigure(db);
+    }
+
+    public static SQLiteDatabase getDataBase(Context context, String dataBaseName, String tableName, boolean isRead){
         MyDBHelper.tableName = tableName;
         SQLiteDatabase database = mappingDataBase(dataBaseName);
         int version = mappingDataBaseVersion(dataBaseName);
@@ -46,7 +56,15 @@ public class MyDBHelper extends SQLiteOpenHelper{
         return database;
     }
 
-
+    private void createTable(SQLiteDatabase db){
+        if(MyDBHelper.tableName.equals(ExchangeRatePerDayRecord.TABLE_NAME)){
+            db.execSQL(ExchangeRatePerDayRecord.CREATE_TABLE);
+            Log.d(TAG,"check createTable ExchangeRatePerDayRecord command = "+ExchangeRatePerDayRecord.CREATE_TABLE);
+        }else if(MyDBHelper.tableName.equals(ExchangeRateMonitorRecord.TABLE_NAME)){
+            db.execSQL(ExchangeRateMonitorRecord.CREATE_TABLE);
+            Log.d(TAG,"check createTable ExchangeRateMonitorRecord command = "+ExchangeRateMonitorRecord.CREATE_TABLE);
+        }
+    }
     private static SQLiteDatabase mappingDataBase(String dataBaseName){
         if(dataBaseName.equals(EXCHANGERATE_DATABASE_NAME)){
             return databaseExchangeRate;

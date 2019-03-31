@@ -27,11 +27,9 @@ public class ExchangeRateHTMLUtility {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //String doc = exchangeRateDoc.title();
-        if(exchangeRateDoc.body() == null){
-            Log.e(TAG,"Byron exchangeRateDoc body is null");
-        }else{
-            Log.e(TAG,"Byron exchangeRateDoc body is not null");
+        if(exchangeRateDoc == null){
+            Log.d(TAG,"exchangeRateDoc is null");
+            return;
         }
         Elements elements = exchangeRateDoc.body().select("p");
         for(Element element : elements){

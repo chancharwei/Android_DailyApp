@@ -172,6 +172,9 @@
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:background="@color/color_White"
+        android:hint="輸入匯率"
+        android:inputType="numberDecimal"
+        android:maxLength="7"
         app:layout_constraintBottom_toTopOf="@+id/textView4"
         app:layout_constraintStart_toStartOf="@+id/textView_updateTime"
         app:layout_constraintTop_toBottomOf="@+id/textView4"
@@ -183,8 +186,20 @@
         android:layout_height="39dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
+        android:onClick="recordMonitorExchangeRate"
         app:layout_constraintBottom_toBottomOf="@+id/background"
         app:layout_constraintEnd_toEndOf="@+id/background"
         app:srcCompat="@drawable/note" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="45dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:onClick="startMonitorListActivity"
+        app:layout_constraintBottom_toBottomOf="@+id/background"
+        app:layout_constraintStart_toStartOf="@+id/background"
+        app:srcCompat="@drawable/ic_monitor_list" />
 
 </android.support.constraint.ConstraintLayout>

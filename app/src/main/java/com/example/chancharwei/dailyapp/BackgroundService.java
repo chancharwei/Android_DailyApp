@@ -10,10 +10,13 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.chancharwei.dailyapp.data.ExchangeRateMonitorData;
+import com.example.chancharwei.dailyapp.data.ExchangeRateMonitorRecord;
 import com.example.chancharwei.dailyapp.data.ExchangeRatePerDayRecord;
 import com.example.chancharwei.dailyapp.data.ExchangeRateTableData;
 import com.example.chancharwei.dailyapp.utilies.ExchangeRateHTMLUtility;
 import com.example.chancharwei.dailyapp.utilies.NetworkUtility;
+import com.example.chancharwei.dailyapp.utilies.NotificationUtily;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,6 +33,8 @@ public class BackgroundService extends IntentService {
     private static final String TAIWAN_BANK_EXCHANGERATE = "https://rate.bot.com.tw/xrt?Lang=zh-TW";
     private SharedPreferences preference;
     ExchangeRateHTMLUtility exchangeRateHTMLUtility;
+    ExchangeRatePerDayRecord exchangeRatePerDayRecord;
+    ExchangeRateMonitorRecord exchangeRateMonitorRecord;
     public BackgroundService() {
         super("BackgroundService");
     }
@@ -50,6 +55,13 @@ public class BackgroundService extends IntentService {
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
+        if(exchangeRatePerDayRecord != null){
+            exchangeRatePerDayRecord.close();
+        }
+        if(exchangeRateMonitorRecord != null){
+            exchangeRateMonitorRecord.close();
+        }
+
         super.onDestroy();
     }
 
@@ -82,7 +94,8 @@ public class BackgroundService extends IntentService {
     }
 
     private void recordExchangeRate(ArrayList<Object> dataList){
-        ExchangeRatePerDayRecord exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,false);
+        exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,false);
+        exchangeRateMonitorRecord = new ExchangeRateMonitorRecord(this,false);
         long updateRowID = -1,updateStartRowID = -1,updateEndRowID = -1;
         boolean setNewDataForNewDay;
         String dateTime = "";
@@ -95,7 +108,6 @@ public class BackgroundService extends IntentService {
         Log.d(TAG,"lastDateTime = "+preference.getString("recordDateTime","yyyy/MM/dd")+" dateTime = "+dateTime);
         if(preference.getString("recordDateTime","yyyy/MM/dd").equals(dateTime)){
             setNewDataForNewDay = false;
-
             if(preference.getString("recordClockTime","hh:mm").equals(clockTime)){
                 Log.i(TAG,"same data with time ("+dateTime+","+clockTime+")");
                 return;
@@ -125,6 +137,8 @@ public class BackgroundService extends IntentService {
             }
 
 
+            findMonitorEXRate(data,exchangeRateMonitorRecord);
+
             if(setNewDataForNewDay){
                 long rowID = exchangeRatePerDayRecord.insert(data);
                 if(currency == 0){
@@ -138,8 +152,9 @@ public class BackgroundService extends IntentService {
                 Log.d(TAG,"updateRowID = "+updateRowID+", updateEndRowID = "+updateEndRowID);
                 if(updateRowID<=updateEndRowID) {
                     ExchangeRateTableData originalData = exchangeRatePerDayRecord.queryByID(updateRowID);
-                    boolean needUpdate = data.needUpdateNewData(originalData);
+                    boolean needUpdate = data.updateWithNewData(originalData);
                     if(needUpdate){
+                        Log.d(TAG,"needUpdate updateRowID = "+updateRowID);
                         boolean updateDataSuccess = exchangeRatePerDayRecord.update(originalData);
                         if(!updateDataSuccess){
                             Log.w(TAG,"update this row failed, rowID("+originalData.getId()+")");
@@ -153,8 +168,64 @@ public class BackgroundService extends IntentService {
             }
 
         }
-
     }
+
+    private void findMonitorEXRate(ExchangeRateTableData data,ExchangeRateMonitorRecord exchangeRateMonitorRecord){
+        ArrayList<ExchangeRateMonitorData>[] monitorList = exchangeRateMonitorRecord.queryByCurrency(data.getCurrency());
+        ArrayList<ExchangeRateMonitorData> nowCurrencyList = monitorList[0];
+        ArrayList<ExchangeRateMonitorData> targetCurrencyList = monitorList[1];
+
+        for(ExchangeRateMonitorData listData : nowCurrencyList){
+            boolean needNotify = false;
+            double now_exchangeRate = 0;
+            if(listData.getTypeOfExchangeRate().equals(listData.CashRateName)){
+                if(data.getCashRateBuyMax() > listData.getExpectedExchangeRate()){ //data.getCashRateBuyMax == data.getCashRateBuyMin
+                    needNotify = true;
+                    now_exchangeRate = data.getCashRateBuyMax();
+                }
+            }else{
+
+                if(data.getSpotRateBuyMax() > listData.getExpectedExchangeRate()){ //data.getSpotRateBuyMax == data.getSpotRateBuyMin
+                    needNotify = true;
+                    now_exchangeRate = data.getSpotRateBuyMax();
+                }
+            }
+            Log.d(TAG,"Byron check needNotify = "+needNotify+" getNotifyDone = "+listData.getNotifyDone());
+            if(needNotify && listData.getNotifyDone() == 0){
+                notifyUser(listData.getNowCurrency(),listData.getTypeOfExchangeRate(),"Sell",listData.getExpectedExchangeRate(),now_exchangeRate);
+                listData.setNotifyDone(1);
+                exchangeRateMonitorRecord.updateByID(listData.getId(),listData);
+            }
+
+        }
+        for(ExchangeRateMonitorData listData : targetCurrencyList){
+            boolean needNotify = false;
+            double now_exchangeRate = 0;
+            if(listData.getTypeOfExchangeRate().equals(listData.CashRateName)){
+                if(data.getCashRateSellMax() < listData.getExpectedExchangeRate()){ //data.getCashRateSellMax == data.getCashRateSellMin
+                    needNotify = true;
+                    now_exchangeRate = data.getCashRateSellMax();
+                }
+            }else{
+                if(data.getSpotRateSellMax() < listData.getExpectedExchangeRate()){ //data.getSpotRateSellMax == data.getSpotRateSellMin
+                    needNotify = true;
+                    now_exchangeRate = data.getSpotRateSellMax();
+                }
+            }
+            if(needNotify && listData.getNotifyDone() == 0){
+                notifyUser(listData.getTargetCurrency(),listData.getTypeOfExchangeRate(),"Buy",listData.getExpectedExchangeRate(),now_exchangeRate);
+                listData.setNotifyDone(1);
+                exchangeRateMonitorRecord.updateByID(listData.getId(),listData);
+            }
+
+        }
+        return;
+    }
+
+    private void notifyUser(String monitorCurrency,String typeOfMonitorExXRate,String buyOrSell,double targetExRate,double nowExRate){
+        NotificationUtily.remindExchangeRate(this,monitorCurrency,typeOfMonitorExXRate,buyOrSell,targetExRate,nowExRate);
+    }
+
 
 
     public void triggerAlarmManager(){
@@ -164,6 +235,5 @@ public class BackgroundService extends IntentService {
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         alarm.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+AlarmManager.INTERVAL_FIFTEEN_MINUTES,pendingIntent);
     }
-
 
 }

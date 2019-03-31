@@ -502,7 +502,6 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                 @Override
                 public HashMap<String, double[]> loadInBackground() {
                     Log.i(TAG,"parsing location xml info");
-                    String info;
                     try {
                         URL locationInfoURL = new URL(WeatherXmlUtility.getLocationInfoXML());
                         if (NetworkUtility.HttpCheckStatusWithURL(locationInfoURL)) {

@@ -119,48 +119,62 @@ public class ExchangeRateTableData {
         }
     }
 
-    public boolean needUpdateNewData(ExchangeRateTableData originalData){
+    public boolean updateWithNewData(ExchangeRateTableData originalData){
         boolean needUpdate = false;
 
         if(originalData != null){
-            Log.d(TAG,originalData.getCashRateBuyMax()+","+originalData.getCurrency()+","+originalData.getCashRateBuyMax());
 
             if(originalData.getCashRateBuyMax() < this.getCashRateBuyMax()){
+                Log.d(TAG,"Byron update getCashRateBuyMax ori "+originalData.getCashRateBuyMax()+" new "+this.getCashRateBuyMax());
                 originalData.setCashRateBuyMax(this.getCashRateBuyMax());
                 needUpdate = true;
             }
 
             if(originalData.getCashRateBuyMin() > this.getCashRateBuyMin()){
+                Log.d(TAG,"Byron update getCashRateBuyMin ori "+originalData.getCashRateBuyMin()+" new "+this.getCashRateBuyMin());
+
                 originalData.setCashRateBuyMin(this.getCashRateBuyMin());
                 needUpdate = true;
             }
 
             if(originalData.getCashRateSellMax() < this.getCashRateSellMax()){
+                Log.d(TAG,"Byron update getCashRateSellMax ori "+originalData.getCashRateSellMax()+" new "+this.getCashRateSellMax());
+
                 originalData.setCashRateSellMax(this.getCashRateSellMax());
                 needUpdate = true;
             }
 
             if(originalData.getCashRateSellMin() > this.getCashRateSellMin()){
+                Log.d(TAG,"Byron update getCashRateSellMin ori "+originalData.getCashRateSellMin()+" new "+this.getCashRateSellMin());
+
                 originalData.setCashRateSellMin(this.getCashRateSellMin());
                 needUpdate = true;
             }
 
             if(originalData.getSpotRateBuyMax() < this.getSpotRateBuyMax()){
+                Log.d(TAG,"Byron update getSpotRateBuyMax ori "+originalData.getSpotRateBuyMax()+" new "+this.getSpotRateBuyMax());
+
                 originalData.setSpotRateBuyMax(this.getSpotRateBuyMax());
                 needUpdate = true;
             }
 
             if(originalData.getSpotRateBuyMin() > this.getSpotRateBuyMin()){
+                Log.d(TAG,"Byron update getSpotRateBuyMin ori "+originalData.getSpotRateBuyMin()+" new "+this.getSpotRateBuyMin());
+
                 originalData.setSpotRateBuyMin(this.getSpotRateBuyMin());
                 needUpdate = true;
             }
 
             if(originalData.getSpotRateSellMax() < this.getSpotRateSellMax()){
+                Log.d(TAG,"Byron update getSpotRateSellMax ori "+originalData.getSpotRateSellMax()+" new "+this.getSpotRateSellMax());
+
                 originalData.setSpotRateSellMax(this.getSpotRateSellMax());
                 needUpdate = true;
             }
 
             if(originalData.getSpotRateSellMin() > this.getSpotRateSellMin()){
+                Log.d(TAG,"Byron update getSpotRateSellMin ori "+originalData.getSpotRateSellMin()+" new "+this.getSpotRateSellMin());
+
                 originalData.setSpotRateSellMin(this.getSpotRateSellMin());
                 needUpdate = true;
             }

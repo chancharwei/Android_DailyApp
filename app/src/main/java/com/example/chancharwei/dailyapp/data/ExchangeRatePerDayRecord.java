@@ -1,20 +1,14 @@
 package com.example.chancharwei.dailyapp.data;
 
-import android.content.ContentResolver;
+
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.CharArrayBuffer;
-import android.database.ContentObserver;
+
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
-import android.os.Bundle;
 import android.util.Log;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class ExchangeRatePerDayRecord {
     private static final String TAG = ExchangeRatePerDayRecord.class.getName();
@@ -33,10 +27,10 @@ public class ExchangeRatePerDayRecord {
     private static final String SPOTRATE_SELL_MIN = "SpotRateSellMin";
 
     public static final String CREATE_TABLE =
-            "CREATE TABLE " +TABLE_NAME+ " (" +
+            "CREATE TABLE if not exists " +TABLE_NAME+ " (" +
                     KEY_ID+ " INTEGER PRIMARY KEY AUTOINCREMENT, " + //0
-                    DATETIME_COLUMN+ " INTEGER NOT NULL, " +  //1
-                    TYPE_OF_CURRENCY+ " INTEGER NOT NULL, " +  //2
+                    DATETIME_COLUMN+ " TEXT NOT NULL, " +  //1
+                    TYPE_OF_CURRENCY+ " TEXT NOT NULL, " +  //2
                     CASHRATE_BUY_MAX+ " REAL, "+ //3
                     CASHRATE_BUY_MIN+ " REAL, "+ //4
                     CASHRATE_SELL_MAX+ " REAL, "+ //5
@@ -51,7 +45,10 @@ public class ExchangeRatePerDayRecord {
     }
 
     public void close(){
-        db.close();
+        if(db!=null && db.isOpen()){
+            Log.d(TAG,"Byron database close");
+            db.close();
+        }
     }
     public long insert(ExchangeRateTableData data){
         ContentValues cv = setDataToDataBase(data);

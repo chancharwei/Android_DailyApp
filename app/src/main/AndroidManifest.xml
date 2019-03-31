@@ -48,7 +48,13 @@
             android:name=".BackgroundService"
             android:exported="false" />
 
-        <activity android:name=".MonitorExRateActivity"></activity>
+        <activity android:name=".MonitorExRateActivity" />
+
+        <service
+            android:name=".ExchangeRateReminderService"
+            android:exported="false" />
+
+        <activity android:name=".MonitorERListActivity"></activity>
     </application>
 
 </manifest>

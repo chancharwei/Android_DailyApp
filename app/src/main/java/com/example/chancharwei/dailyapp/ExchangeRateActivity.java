@@ -51,6 +51,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
     private Handler updateUIHandler;
     private String[] currencyType;
     private String selectedDate = null,selectedCurrency = null;
+    ExchangeRatePerDayRecord exchangeRatePerDayRecord = null;
     private ServiceHandleWork serviceHandleWork;
     private final int WORK_GETDATA_TO_DATABASE = 1,WORK_SEARCHDATA_FROM_DATABASE = 2; //WORK CONTENT IN NEW THREAD
     private final int UPDATE_UI_CURRENT_EXCHANGERATE= 1,UPDATE_UI_SPINNER_CURRENCY = 2,UPDATE_UI_SEARCH_EXCHANGERATE = 3;
@@ -63,7 +64,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
     private String dateTime,clockTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG,"Byron check time onCreate "+SystemClock.elapsedRealtime());
+        Log.d(TAG,"onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exchange_rate);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -330,6 +331,21 @@ public class ExchangeRateActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        Log.d(TAG,"onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.d(TAG,"onStop");
+        if(exchangeRatePerDayRecord != null){
+            exchangeRatePerDayRecord.close();
+        }
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         Log.d(TAG,"onDestroy");
         serviceHandleWork.cleanAllWork();
@@ -355,7 +371,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
                 }
                 break;
             case WORK_SEARCHDATA_FROM_DATABASE:
-                ExchangeRatePerDayRecord exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,true);
+                exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,true);
                 Log.d(TAG,"Byron Searchdate = "+selectedDate+" currency = "+selectedCurrency);
 
                 if(selectedDate == null && selectedCurrency != null){
@@ -411,7 +427,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
 
     }
     private void showAndRecordExchangeRate(ExchangeRateHTMLUtility exchangeRateHTMLUtility){
-        ExchangeRatePerDayRecord exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,false);
+        exchangeRatePerDayRecord = new ExchangeRatePerDayRecord(this,false);
         ArrayList<Object> dataList = exchangeRateHTMLUtility.getTransformDoneDataList();
         long updateRowID = -1,updateStartRowID = -1,updateEndRowID = -1;
         boolean setNewDataForNewDay;
@@ -476,11 +492,13 @@ public class ExchangeRateActivity extends AppCompatActivity {
                 exchangeRatePreference.edit().putLong("perDateDataBase_"+currency,rowID).commit();
                 Log.d(TAG,"get("+currency+") id = "+rowID);
             }else{
+                Log.d(TAG,"Byron check updateRowID = "+updateRowID+", updateEndRowID = "+updateEndRowID);
                 if(updateRowID<=updateEndRowID) {
                     ExchangeRateTableData originalData = exchangeRatePerDayRecord.queryByID(updateRowID);
-                    boolean needUpdate = data.needUpdateNewData(originalData);
+                    boolean needUpdate = data.updateWithNewData(originalData);
                     if(needUpdate){
-                        boolean updateDataSuccess = exchangeRatePerDayRecord.update(originalData);
+                        Log.d(TAG,"Byron needUpdate updateRowID = "+updateRowID);
+                        boolean updateDataSuccess = exchangeRatePerDayRecord.update(data);
                         if(!updateDataSuccess){
                             Log.w(TAG,"update this row failed, rowID("+originalData.getId()+")");
                         }
@@ -497,7 +515,6 @@ public class ExchangeRateActivity extends AppCompatActivity {
             updateUIInfo(UPDATE_UI_SPINNER_CURRENCY,currencyTypeList);
             saveData(UPDATE_UI_SPINNER_CURRENCY,currencyTypeList);
         }
-
     }
 
     private void saveData(int updateID,ArrayList<String> dataList){
