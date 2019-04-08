@@ -87,7 +87,7 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
         Log.i(TAG,"onCreate");
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_weather);
 
-                LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         mRecyclerView.setLayoutManager(layoutManager);  //can use 3 layoutManager LinearLayoutManager,StaggeredGridLayoutManager,GridLayoutManager
         //TODO
         mRecyclerView.setHasFixedSize(true);

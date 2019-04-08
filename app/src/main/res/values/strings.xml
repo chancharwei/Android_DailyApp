@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">DailyApp</string>
+    <string name="weather_activity">Weather</string>
+    <string name="exchangeRate_activity">ExchangeRate</string>
     <string name="menu_weather">Weather</string>
-    <string name="menu_exchangeRate">EchangeRate</string>
+    <string name="menu_exchangeRate">ExchangeRate</string>
     <string name="location">新北市,永和區</string>
     <string name="search_hint">Search location</string>
     <string name="ex_date">日期</string>

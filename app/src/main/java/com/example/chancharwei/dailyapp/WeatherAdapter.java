@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.List;
-
 public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>{
     private static final String TAG = WeatherAdapter.class.getName();
     private WeatherAdapterOnclickHandler mClickHandler;
@@ -71,7 +69,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherV
         public final TextView mWeatherTextView;
         public WeatherViewHolder(@NonNull View itemView) {
             super(itemView);
-            mWeatherTextView = (TextView)itemView.findViewById(R.id.weather_list_text);
+            mWeatherTextView = (TextView)itemView.findViewById(R.id.list_text);
             itemView.setOnClickListener(this);
         }
 
@@ -81,6 +79,8 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherV
             Log.d(TAG,"select item number ("+position+")");
             mClickHandler.onClick(mWeatherData[position]);
         }
+
+
 
     }
 }

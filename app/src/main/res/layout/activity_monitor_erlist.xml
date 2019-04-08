@@ -4,6 +4,58 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/color_Pink"
     tools:context=".MonitorERListActivity">
+
+
+    <CheckBox
+        android:id="@+id/checkBox_CashRate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="CashRate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+        android:id="@+id/checkBox_SpotRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="SpotRate"
+        app:layout_constraintBottom_toTopOf="@+id/checkBox_CashRate"
+        app:layout_constraintStart_toEndOf="@+id/checkBox_CashRate"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_CashRate" />
+
+    <CheckBox
+        android:id="@+id/checkBox_SellOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SellOut"
+        app:layout_constraintBottom_toTopOf="@+id/checkBox_BuyIn"
+        app:layout_constraintStart_toStartOf="@+id/checkBox_SpotRate"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_BuyIn" />
+
+    <CheckBox
+        android:id="@+id/checkBox_BuyIn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="BuyIn"
+        app:layout_constraintStart_toStartOf="@+id/checkBox_CashRate"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_CashRate" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview_exchangeratelist"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_SellOut" />
 
 </android.support.constraint.ConstraintLayout>

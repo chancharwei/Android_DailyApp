@@ -2,8 +2,8 @@ package com.example.chancharwei.dailyapp.data;
 
 public class ExchangeRateMonitorData {
     private static final String TAG = ExchangeRateMonitorData.class.getName();
-    public final String CashRateName = "cashRate";
-    public final String SpotRateName = "spotRate";
+    public static final String CashRateName = "cashRate";
+    public static final String SpotRateName = "spotRate";
     private long rowId = 0;
     private String nowCurrency;
     private String targetCurrency;

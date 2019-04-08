@@ -107,6 +107,18 @@ public class ExchangeRateMonitorRecord {
         return db.update(TABLE_NAME,cv,where,null) > 0;
     }
 
+    public ExchangeRateMonitorData queryByID(Long rowID){
+        String where = KEY_ID + "=" + rowID;
+        Cursor cursor = db.query(TABLE_NAME,null,where,null,
+                null,null,null,null);
+        if(cursor.getCount()!=0){
+            cursor.moveToFirst();
+            return getDataFromDataBase(cursor);
+        }else{
+            return null;
+        }
+    }
+
     public ArrayList<ExchangeRateMonitorData>[] queryByCurrency(String currency){
         ArrayList<ExchangeRateMonitorData> nowCurrencyIDList = new ArrayList<ExchangeRateMonitorData>();
         ArrayList<ExchangeRateMonitorData> targetCurrencyIDList = new ArrayList<ExchangeRateMonitorData>();

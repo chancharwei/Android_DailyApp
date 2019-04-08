@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="12dp"
+    android:paddingTop="12dp"
+    tools:layout_editor_absoluteY="81dp">
+
+    <ImageView
+        android:id="@+id/imageView_TargetCurrency"
+        android:layout_width="88dp"
+        android:layout_height="85dp"
+        android:layout_marginStart="80dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView_NowCurrency"
+        app:layout_constraintStart_toEndOf="@+id/imageView_NowCurrency"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_NowCurrency"
+        app:layout_constraintVertical_bias="0.511"
+        app:srcCompat="@drawable/flag_twi2" />
+
+    <ImageView
+        android:id="@+id/imageView_NowCurrency"
+        android:layout_width="88dp"
+        android:layout_height="85dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/flag_twi2" />
+
+    <TextView
+        android:id="@+id/textView_TargetCurrency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/textView_NowCurrency"
+        app:layout_constraintEnd_toStartOf="@+id/imageView_TargetCurrency"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toEndOf="@+id/imageView_TargetCurrency"
+        app:layout_constraintTop_toBottomOf="@+id/textView_NowCurrency"
+        app:layout_constraintVertical_bias="0.526"
+        tools:text="美金 (USA)" />
+
+    <TextView
+        android:id="@+id/textView_NowCurrency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/imageView_NowCurrency"
+        app:layout_constraintStart_toEndOf="@+id/imageView_NowCurrency"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_NowCurrency"
+        tools:text="新台幣 (TWI)" />
+
+    <TextView
+        android:id="@+id/textView_TargetExRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/imageView_TargetCurrency"
+        app:layout_constraintEnd_toEndOf="@+id/imageView_TargetCurrency"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_TargetCurrency"
+        tools:text="0.2785" />
+
+    <TextView
+        android:id="@+id/textView_NowExRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/imageView_arrow"
+        app:layout_constraintEnd_toStartOf="@+id/imageView_arrow"
+        app:layout_constraintStart_toEndOf="@+id/imageView_arrow"
+        tools:text="0.2787" />
+
+    <ImageView
+        android:id="@+id/imageView_arrow"
+        android:layout_width="48dp"
+        android:layout_height="36dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView_NowCurrency"
+        app:layout_constraintEnd_toStartOf="@+id/imageView_NowCurrency"
+        app:layout_constraintStart_toEndOf="@+id/imageView_TargetCurrency"
+        app:layout_constraintTop_toTopOf="@+id/textView_NowCurrency"
+        app:srcCompat="@drawable/arrow" />
+
+    <ImageView
+        android:id="@+id/imageView_coin"
+        android:layout_width="38dp"
+        android:layout_height="29dp"
+        app:layout_constraintBottom_toTopOf="@+id/textView_TargetCurrency"
+        app:layout_constraintEnd_toStartOf="@+id/textView_TargetExRate"
+        app:layout_constraintStart_toEndOf="@+id/textView_TargetExRate"
+        app:layout_constraintTop_toBottomOf="@+id/textView_TargetCurrency"
+        app:srcCompat="@drawable/ic_coin2" />
+</android.support.constraint.ConstraintLayout>

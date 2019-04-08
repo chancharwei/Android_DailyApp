@@ -45,6 +45,7 @@ import static java.lang.Thread.*;
 public class ExchangeRateActivity extends AppCompatActivity {
     private final static String TAG = ExchangeRateActivity.class.getName();
     private static final String TAIWAN_BANK_EXCHANGERATE = "https://rate.bot.com.tw/xrt?Lang=zh-TW";
+    final static String exchangeRateSharedPreference = "exchangeRate";
     private SharedPreferences exchangeRatePreference;
     private Spinner currencySpinner;
     private final String spinnerFistItem = "Currency";
@@ -67,7 +68,8 @@ public class ExchangeRateActivity extends AppCompatActivity {
         Log.d(TAG,"onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exchange_rate);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setTitle(R.string.exchangeRate_activity);
+        //getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         progressBar_Loading = findViewById(R.id.progressBar_Loading);
         progressBar_Loading.setVisibility(View.VISIBLE);
@@ -108,7 +110,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
         horizontalScrollView_current = (HorizontalScrollView) findViewById(R.id.horizontalScrollView_current);
         horizontalScrollView_database.setVisibility(View.INVISIBLE);
         horizontalScrollView_current.setVisibility(View.INVISIBLE);
-        exchangeRatePreference = getSharedPreferences("exchangeRate", MODE_PRIVATE);
+        exchangeRatePreference = getSharedPreferences(exchangeRateSharedPreference, MODE_PRIVATE);
         currencySpinner = findViewById(R.id.dateSpinner_needChange);
         currencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -598,6 +600,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
         }
         startIntent.setClass(this, MonitorExRateActivity.class);
         startActivity(startIntent);
+        finish();
     }
 
     @Override

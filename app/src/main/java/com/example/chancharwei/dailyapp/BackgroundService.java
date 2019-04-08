@@ -48,7 +48,7 @@ public class BackgroundService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
-        preference = getSharedPreferences("exchangeRate", MODE_PRIVATE);
+        preference = getSharedPreferences(ExchangeRateActivity.exchangeRateSharedPreference, MODE_PRIVATE);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -201,6 +201,10 @@ public class BackgroundService extends IntentService {
         for(ExchangeRateMonitorData listData : targetCurrencyList){
             boolean needNotify = false;
             double now_exchangeRate = 0;
+            if(listData.getExpectedExchangeRate() == -1){
+                //not monitor this item
+                continue;
+            }
             if(listData.getTypeOfExchangeRate().equals(listData.CashRateName)){
                 if(data.getCashRateSellMax() < listData.getExpectedExchangeRate()){ //data.getCashRateSellMax == data.getCashRateSellMin
                     needNotify = true;

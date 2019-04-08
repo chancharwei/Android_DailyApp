@@ -78,7 +78,12 @@ public class ExchangeRateHTMLUtility {
                 afterTransformList.add(-1.0);
                 //Log.d(TAG,"Byron - list = "+list);
             }else{
-                afterTransformList.add(Double.parseDouble(list));
+                try{
+                    afterTransformList.add(Double.parseDouble(list));
+                }catch (NumberFormatException exception){
+                    Log.d(TAG,"parsing Unexpected string ("+list+")");
+                    afterTransformList.add(-1.0);
+                }
                 //Log.d(TAG,"Byron others list = "+list);
             }
         }

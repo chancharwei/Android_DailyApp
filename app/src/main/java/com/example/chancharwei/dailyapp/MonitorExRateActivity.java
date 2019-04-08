@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.chancharwei.dailyapp.data.ExchangeRateMonitorData;
 import com.example.chancharwei.dailyapp.data.ExchangeRateMonitorRecord;
@@ -26,8 +27,8 @@ import com.example.chancharwei.dailyapp.utilies.NotificationUtily;
 import java.util.ArrayList;
 
 public class MonitorExRateActivity extends AppCompatActivity {
-    private final String TAG = MonitorExRateActivity.class.getName();
-    private final String TaiwanMoneyName = "新台幣 (TWI)";
+    private static final String TAG = MonitorExRateActivity.class.getName();
+    public static final String TaiwanMoneyName = "新台幣 (TWI)";
     private Spinner nowCurrencySpinner,exchangeCurrencySpinner;
     private String selectedNowCurrency, selectedTargetCurrency;
     private final String spinnerFistItem = "Currency";
@@ -43,6 +44,7 @@ public class MonitorExRateActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG,"onCreate");
         super.onCreate(savedInstanceState);
+        getSupportActionBar().setTitle(R.string.exchangeRate_activity);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.activity_monitor_ex_rate);
         flagNowView = findViewById(R.id.nowCurrency);
@@ -80,8 +82,6 @@ public class MonitorExRateActivity extends AppCompatActivity {
         updateTime.setText(intent.getStringExtra("updateTime"));
         currentData = intent.getStringArrayExtra("currentData");
         setCheckBox();
-        //ExchangeRateMonitorRecord exchangeRateMonitorRecord = new ExchangeRateMonitorRecord(this,false);
-        //exchangeRateMonitorRecord.deleteAllData();
     }
 
     @Override
@@ -94,7 +94,6 @@ public class MonitorExRateActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean select) {
                 if(select){
-                    Log.d(TAG,"Byron check run checkBoxCashRate click");
                     checkBoxSpotRate.setChecked(false);
                     exchangeRateNow = mappingRate();
                 }
@@ -105,7 +104,6 @@ public class MonitorExRateActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean select) {
                 if(select){
-                    Log.d(TAG,"Byron check run checkBoxSpotRate click");
                     checkBoxCashRate.setChecked(false);
                     exchangeRateNow = mappingRate();
                 }
@@ -202,14 +200,8 @@ public class MonitorExRateActivity extends AppCompatActivity {
     }
 
     public void recordMonitorExchangeRate(View view){
-        double expectedExchangeRate = 0;
-        if(selectedNowCurrency == null || selectedTargetCurrency == null || inputExchangeRate.getText() == null){
-            return;
-        }
-        try {
-            expectedExchangeRate = Double.parseDouble(inputExchangeRate.getText().toString());
-        }catch (NumberFormatException e){
-            Log.e(TAG,"with wrong input expectedExchangeRate = "+inputExchangeRate.getText().toString());
+        double expectedExchangeRate = checkInputDataCorrectness();
+        if(expectedExchangeRate == -1){
             return;
         }
         exchangeRateMonitorRecord = new ExchangeRateMonitorRecord(this,false);
@@ -222,22 +214,59 @@ public class MonitorExRateActivity extends AppCompatActivity {
         }else{
             newMonitorData.setTypeOfExchangeRate(newMonitorData.CashRateName);
         }
-
         newMonitorData.setExpectedExchangeRate(expectedExchangeRate);
         newMonitorData.setNotifyDone(0);
         ExchangeRateMonitorData dataBaseMonitorData = exchangeRateMonitorRecord.queryToCheckExistData(newMonitorData);
-        if(dataBaseMonitorData != null)
-        Log.d(TAG,"Byron check dataBaseMonitorData expectedExchangeRate = "+dataBaseMonitorData.getExpectedExchangeRate()+" new = "+expectedExchangeRate);
+
         if(dataBaseMonitorData == null){
             exchangeRateMonitorRecord.insert(newMonitorData);
         }else if(dataBaseMonitorData.getExpectedExchangeRate() == expectedExchangeRate){
-            Log.d(TAG,"Byron need not to change data");
             //do nothing
         }else{
             boolean updateSuccess = exchangeRateMonitorRecord.updateByID(dataBaseMonitorData.getId(),newMonitorData);
-            Log.d(TAG,"Byron check updateSuccess = "+updateSuccess);
+            Log.d(TAG,"update monitor data Success ? -> "+(updateSuccess?"success":"not success"));
         }
 
+    }
+
+    private double checkInputDataCorrectness(){
+        double expectedExchangeRate;
+        if(selectedNowCurrency == null || selectedTargetCurrency == null || inputExchangeRate.getText() == null){
+            Toast toast = Toast.makeText(MonitorExRateActivity.this,
+                    "please select currency", Toast.LENGTH_LONG);
+            toast.show();
+            return -1;
+        }
+        try {
+            expectedExchangeRate = Double.parseDouble(inputExchangeRate.getText().toString());
+        }catch (NumberFormatException e){
+            Toast toast = Toast.makeText(MonitorExRateActivity.this,
+                    "with wrong input exchangeRate", Toast.LENGTH_LONG);
+            toast.show();
+            Log.e(TAG,"with wrong input expectedExchangeRate = "+inputExchangeRate.getText().toString());
+            return -1;
+        }
+        if(selectedNowCurrency.equals(TaiwanMoneyName) && selectedTargetCurrency.equals(TaiwanMoneyName)){
+            Toast toast = Toast.makeText(MonitorExRateActivity.this,
+                    "same currency needn't to record", Toast.LENGTH_LONG);
+            toast.show();
+            return -1;
+        }else if(selectedNowCurrency.equals(TaiwanMoneyName)){
+            if(expectedExchangeRate > Double.parseDouble(exchangeRateNow)){
+                Toast toast = Toast.makeText(MonitorExRateActivity.this,
+                        "[BUY IN],you need to monitor exchangeRate < "+exchangeRateNow, Toast.LENGTH_LONG);
+                toast.show();
+                return -1;
+            }
+        }else if(selectedTargetCurrency.equals(TaiwanMoneyName)){
+            if(expectedExchangeRate < Double.parseDouble(exchangeRateNow)){
+                Toast toast = Toast.makeText(MonitorExRateActivity.this,
+                        "[SELL OUT],you need to monitor exchangeRate > "+exchangeRateNow, Toast.LENGTH_LONG);
+                toast.show();
+                return -1;
+            }
+        }
+        return expectedExchangeRate;
     }
 
     private void setCurrencySpinner(Intent intent){
@@ -366,15 +395,12 @@ public class MonitorExRateActivity extends AppCompatActivity {
 
     public void startMonitorListActivity(View view){
         Intent startIntent = new Intent();
+        if(currentData.length != 0){
+            startIntent.putExtra("currentData",currentData);
+        }
+
         startIntent.setClass(this, MonitorERListActivity.class);
         startActivity(startIntent);
-        finish();
     }
-
-    /*public void testNotification(View view){
-        NotificationUtily.remindExchangeRate(this);
-    }*/
-
-
 
 }
