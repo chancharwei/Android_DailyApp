@@ -36,4 +36,5 @@ dependencies {
     implementation 'com.google.android.gms:play-services:12.0.1'
     //if you don't have a dependency on com.google.android.gms:play-services-gcm you can use com.firebase:firebase-jobdispatcher:0.7.2
     implementation 'com.firebase:firebase-jobdispatcher-with-gcm-dep:0.7.0'
+    implementation 'com.android.support:design:28.0.0-alpha1'
 }

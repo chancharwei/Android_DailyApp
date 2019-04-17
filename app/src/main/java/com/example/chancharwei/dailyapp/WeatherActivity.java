@@ -7,12 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -27,7 +26,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chancharwei.dailyapp.gps.GPSLocationListener;
@@ -38,14 +39,14 @@ import com.example.chancharwei.dailyapp.gps.GPSLocationManager;
 import com.example.chancharwei.dailyapp.gps.GPSLocation;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -61,13 +62,14 @@ import static android.text.TextUtils.isEmpty;
 public class WeatherActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks,WeatherAdapter.WeatherAdapterOnclickHandler{
     final static String TAG = WeatherActivity.class.getName();
     private RecyclerView mRecyclerView;
+    private TextView mTextViewLocation, mTextViewDate;
+    private ConstraintLayout constraintLayout;
     private WeatherAdapter mWadapter;
     private static boolean parsingLocationInfoDone;     //parsing xml for location info latitude & longitude
     private static HashMap<String, double[]> locationInfo = null;
     private static final int WEATHER_QUERY_ID = 0;
     private static final int ABSOLUTE_LOCATION_QUERY_ID = 1;
     private static final String WEATHERURL_KEY = "urlKey";
-
     private GoogleApiClient googleApiClient;
     private static boolean gpsSearchStarted = false;
     final static int REQUEST_LOCATION = 199;
@@ -83,10 +85,12 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
         //getSupportActionBar().setTitle("WeatherActivity");
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         Log.i(TAG,"onCreate");
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_weather);
-
+        mRecyclerView = findViewById(R.id.recyclerview_weather);
+        mTextViewLocation = findViewById(R.id.textView_location);
+        mTextViewDate = findViewById(R.id.textView_date);
+        constraintLayout = findViewById(R.id.weather_layout);
+        constraintLayout.setVisibility(View.INVISIBLE);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         mRecyclerView.setLayoutManager(layoutManager);  //can use 3 layoutManager LinearLayoutManager,StaggeredGridLayoutManager,GridLayoutManager
         //TODO
@@ -422,7 +426,7 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                 break;
             case R.id.search:
                 //if click search bar, this callback will trigger
-                mRecyclerView.setVisibility(View.INVISIBLE);
+                //mRecyclerView.setVisibility(View.INVISIBLE);
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -432,9 +436,9 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
     }
 
     @Override
-    public void onClick(String weatherItem) {
-        Toast.makeText(this, weatherItem, Toast.LENGTH_SHORT)
-                .show();
+    public void onClick(String[] weatherItem) {
+        /*Toast.makeText(this, weatherItem, Toast.LENGTH_SHORT)
+                .show();*/
     }
 
     //TODO check how to link this function
@@ -456,10 +460,9 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                     }
                 }
 
-
                 @Nullable
                 @Override
-                public String[] loadInBackground() {
+                public ArrayList<String[]> loadInBackground() {
                     String url_weather = args.getString(WEATHERURL_KEY);
                     String info;
                     if(url_weather == null){
@@ -471,8 +474,8 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                         URL weatherURL = new URL(url_weather);
                         if (NetworkUtility.HttpCheckStatusWithURL(weatherURL)) {
                             info = NetworkUtility.getResponseFromHttpUrl(weatherURL);
-                            String[] weatherData = WeatherJsonUtility.getWeatherStringsFromJson(WeatherActivity.this, info);
-                            return weatherData;
+                            ArrayList<String[]> weatherDataList = WeatherJsonUtility.getWeatherStringsFromJson(WeatherActivity.this, info);
+                            return weatherDataList;
                         } else {
                             Log.e(TAG, "Network Status Wrong");
                         }
@@ -480,8 +483,6 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                     } catch (Exception e){
                         e.printStackTrace();
                     }
-
-
                     return null;
                 }
 
@@ -496,7 +497,6 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                         forceLoad();
                     }
                 }
-
 
                 @Nullable
                 @Override
@@ -518,7 +518,6 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
                     return null;
                 }
 
-
             };
         }
 
@@ -530,8 +529,10 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
         Log.i(TAG,"onLoadFinished");
         if(loader.getId() == WEATHER_QUERY_ID){
             if(data != null){
-                mWadapter.setWeatherData((String[])data);
-                mRecyclerView.setVisibility(View.VISIBLE);
+                mWadapter.setWeatherData((ArrayList<String[]>)data);
+                mTextViewLocation.setText(WeatherJsonUtility.getLocation());
+                mTextViewDate.setText(getDateInfo());
+                constraintLayout.setVisibility(View.VISIBLE);
             }
         }else if(loader.getId() == ABSOLUTE_LOCATION_QUERY_ID){
             if(data != null){
@@ -552,6 +553,13 @@ public class WeatherActivity extends AppCompatActivity implements LoaderManager.
     @Override
     public void onLoaderReset(@NonNull Loader loader) {
 
+    }
+
+    private String getDateInfo(){
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdfWeek = new SimpleDateFormat("EEE, d MMM yyyy");
+        String date = sdfWeek.format(calendar.getTime());
+        return date;
     }
 
     private void weatherSearch(String city,String area){

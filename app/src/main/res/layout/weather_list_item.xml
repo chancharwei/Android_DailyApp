@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="12dp"
+    android:paddingTop="12dp"
+    tools:layout_editor_absoluteY="81dp">
+
+    <ImageView
+        android:id="@+id/imageView_Weather"
+        android:layout_width="69dp"
+        android:layout_height="71dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/weather_sunny"/>
+
+    <TextView
+        android:id="@+id/textView_PoP12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/imageView_Weather"
+        app:layout_constraintStart_toEndOf="@+id/imageView_Weather"
+        app:layout_constraintTop_toBottomOf="@+id/imageView_Weather"
+        tools:text="100%" />
+
+    <TextView
+        android:id="@+id/textView_T"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="25" />
+
+    <TextView
+        android:id="@+id/textView_MaxT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toStartOf="@+id/textView_T"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="30" />
+
+
+    <TextView
+        android:id="@+id/textView_MinT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textView_T"
+        tools:text="20" />
+
+    <TextView
+        android:id="@+id/textView_EndTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/textView_StartTime"
+        app:layout_constraintTop_toBottomOf="@+id/textView_StartTime"
+        tools:text="- Sun 06:00PM" />
+
+    <TextView
+        android:id="@+id/textView_StartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/textView_MinT"
+        app:layout_constraintHorizontal_bias="0.136"
+        app:layout_constraintStart_toEndOf="@+id/imageView_Weather"
+        app:layout_constraintTop_toTopOf="@+id/textView_MaxT"
+        tools:text="Sun 06:00AM" />
+
+    <TextView
+        android:id="@+id/textView_Wx"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/textView_StartTime"
+        app:layout_constraintTop_toTopOf="@+id/textView_MinT"
+        tools:text="短暫陣雨或雷雨後多雲 " />
+</android.support.constraint.ConstraintLayout>

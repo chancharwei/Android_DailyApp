@@ -59,7 +59,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
     private final int numDataEachCurrency = ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;
     HorizontalScrollView horizontalScrollView_database;
     HorizontalScrollView horizontalScrollView_current;
-    ImageView calendar_view,search_view,coin_view;
+    private ImageView mImageView_Calendar, mImageView_Search, mImageView_Coin,mImageView_Background;
     ProgressBar progressBar_Loading;
     private String[] recordCurrentData;
     private String dateTime,clockTime;
@@ -73,16 +73,18 @@ public class ExchangeRateActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         progressBar_Loading = findViewById(R.id.progressBar_Loading);
         progressBar_Loading.setVisibility(View.VISIBLE);
-        calendar_view = findViewById(R.id.calendar_view);
-        calendar_view.setOnClickListener(new View.OnClickListener() {
+        mImageView_Calendar = findViewById(R.id.calendar_view);
+        mImageView_Background = findViewById(R.id.imageView_background);
+        mImageView_Background.setVisibility(View.INVISIBLE);
+        mImageView_Calendar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 calendarFeature();
             }
         });
-        calendar_view.setVisibility(View.INVISIBLE);
-        search_view = findViewById(R.id.search_view);
-        search_view.setOnClickListener(new View.OnClickListener(){
+        mImageView_Calendar.setVisibility(View.INVISIBLE);
+        mImageView_Search = findViewById(R.id.search_view);
+        mImageView_Search.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 //reset table first +++
@@ -97,15 +99,15 @@ public class ExchangeRateActivity extends AppCompatActivity {
                 searchDataFromDataBase();
             }
         });
-        search_view.setVisibility(View.INVISIBLE);
-        coin_view = (ImageView) findViewById(R.id.coin_view);
-        coin_view.setOnClickListener(new View.OnClickListener() {
+        mImageView_Search.setVisibility(View.INVISIBLE);
+        mImageView_Coin = (ImageView) findViewById(R.id.coin_view);
+        mImageView_Coin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startMonitorExRate();
             }
         });
-        coin_view.setVisibility(View.INVISIBLE);
+        mImageView_Coin.setVisibility(View.INVISIBLE);
         horizontalScrollView_database = (HorizontalScrollView) findViewById(R.id.horizontalScrollView_databse);
         horizontalScrollView_current = (HorizontalScrollView) findViewById(R.id.horizontalScrollView_current);
         horizontalScrollView_database.setVisibility(View.INVISIBLE);
@@ -310,9 +312,10 @@ public class ExchangeRateActivity extends AppCompatActivity {
         horizontalScrollView_database.setVisibility(View.INVISIBLE);
         horizontalScrollView_current.setVisibility(View.VISIBLE);
         currencySpinner.setVisibility(View.VISIBLE);
-        calendar_view.setVisibility(View.VISIBLE);
-        search_view.setVisibility(View.VISIBLE);
-        coin_view.setVisibility(View.VISIBLE);
+        mImageView_Calendar.setVisibility(View.VISIBLE);
+        mImageView_Search.setVisibility(View.VISIBLE);
+        mImageView_Coin.setVisibility(View.VISIBLE);
+        mImageView_Background.setVisibility(View.VISIBLE);
         progressBar_Loading.setVisibility(View.INVISIBLE);
     }
     private void searchExchangeRate(){

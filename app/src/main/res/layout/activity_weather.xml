@@ -2,48 +2,70 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/weather_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".WeatherActivity">
 
-    <!--<EditText
-        android:id="@+id/editText"
-        android:layout_width="253dp"
-        android:layout_height="31dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/colorPrimary"
-        app:layout_constraintEnd_toStartOf="@+id/button2"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="@string/location" />
-
-
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="69dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+    <ImageView
+        android:id="@+id/background1"
+        android:layout_width="fill_parent"
+        android:layout_height="99dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Button"
-        app:layout_constraintBottom_toTopOf="@+id/editText"
+        android:adjustViewBounds="true"
+        android:background="@drawable/background_border"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />-->
-
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview_weather"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="16dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:background="@drawable/background_border"
+        android:paddingBottom="4dp"
+        android:paddingTop="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/background1"/>
+
+    <TextView
+        android:id="@+id/textView_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="28sp"
+        app:layout_constraintStart_toEndOf="@+id/imageView_location"
+        app:layout_constraintTop_toTopOf="@+id/background1"
+        tools:text="新北市永和區" />
+
+    <TextView
+        android:id="@+id/textView_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textSize="28sp"
+        app:layout_constraintStart_toStartOf="@+id/imageView_location"
+        app:layout_constraintTop_toBottomOf="@+id/textView_location"
+        tools:text="Tue, 16 Apr 2019" />
+
+    <ImageView
+        android:id="@+id/imageView_location"
+        android:layout_width="45dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textView_location"
+        app:layout_constraintStart_toStartOf="@+id/background1"
+        app:layout_constraintTop_toTopOf="@+id/textView_location"
+        app:srcCompat="@drawable/location" />
+
 </android.support.constraint.ConstraintLayout>
