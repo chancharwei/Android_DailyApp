@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class ExchangeRatePerDayRecord {
     private static final String TAG = ExchangeRatePerDayRecord.class.getName();
     private SQLiteDatabase db;
-    public static final String TABLE_NAME = "exchangeRate";
+    public static final String TABLE_NAME = "exchangeRateTable";
     private static final String KEY_ID = "_id";
     private static final String DATETIME_COLUMN = "DateTime";
     private static final String TYPE_OF_CURRENCY = "Currency";

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class ExchangeRateMonitorRecord {
     private static final String TAG = ExchangeRateMonitorRecord.class.getName();
     private SQLiteDatabase db;
-    public static final String TABLE_NAME = "exchangeRateMonitor";
+    public static final String TABLE_NAME = "exchangeRateMonitorTable";
     private static final String KEY_ID = "_id";
     private static final String NOW_CURRENCY = "NowCurrency";
     private static final String TARGET_CURRENCY = "TargetCurrency";

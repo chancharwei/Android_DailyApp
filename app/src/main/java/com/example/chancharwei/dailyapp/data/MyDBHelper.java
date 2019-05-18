@@ -8,7 +8,6 @@ import android.util.Log;
 public class MyDBHelper extends SQLiteOpenHelper{
     private static final String TAG = MyDBHelper.class.getName();
     private static final String EXCHANGERATE_DATABASE_NAME = "exchangeRate.db";
-    private static SQLiteDatabase databaseExchangeRate;
     private static final int VERSION_EXCHANGERATE = 1;
     private static String tableName = "";
 
@@ -40,18 +39,15 @@ public class MyDBHelper extends SQLiteOpenHelper{
         super.onConfigure(db);
     }
 
-    public static SQLiteDatabase getDataBase(Context context, String dataBaseName, String tableName, boolean isRead){
+    public synchronized static SQLiteDatabase getDataBase(Context context, String dataBaseName, String tableName, boolean isRead){
+        Log.d(TAG,"tableName = "+tableName);
         MyDBHelper.tableName = tableName;
-        SQLiteDatabase database = mappingDataBase(dataBaseName);
+        SQLiteDatabase database = null;
         int version = mappingDataBaseVersion(dataBaseName);
-        Log.d(TAG,"Byron check dataBase null ? ("+(database == null)+"), open ? ("+(database == null? "false":database.isOpen())+") version = "+version);
-        if((database == null || !database.isOpen()) && version != -1){
-            if(isRead){
-                database = new MyDBHelper(context,dataBaseName,null,version).getReadableDatabase();
-            }else{
-                database = new MyDBHelper(context,dataBaseName,null,version).getWritableDatabase();
-            }
-            setDataBase(dataBaseName,database);
+        if(isRead){
+            database = new MyDBHelper(context,dataBaseName,null,version).getReadableDatabase();
+        }else{
+            database = new MyDBHelper(context,dataBaseName,null,version).getWritableDatabase();
         }
         return database;
     }
@@ -65,12 +61,6 @@ public class MyDBHelper extends SQLiteOpenHelper{
             Log.d(TAG,"check createTable ExchangeRateMonitorRecord command = "+ExchangeRateMonitorRecord.CREATE_TABLE);
         }
     }
-    private static SQLiteDatabase mappingDataBase(String dataBaseName){
-        if(dataBaseName.equals(EXCHANGERATE_DATABASE_NAME)){
-            return databaseExchangeRate;
-        }
-        return null;
-    }
 
     private static int mappingDataBaseVersion(String dataBaseName){
         if(dataBaseName.equals(EXCHANGERATE_DATABASE_NAME)){
@@ -80,9 +70,4 @@ public class MyDBHelper extends SQLiteOpenHelper{
         return -1;
     }
 
-    private static void setDataBase(String dataBaseName,SQLiteDatabase database){
-        if(dataBaseName.equals(EXCHANGERATE_DATABASE_NAME)){
-            databaseExchangeRate = database;
-        }
-    }
 }
