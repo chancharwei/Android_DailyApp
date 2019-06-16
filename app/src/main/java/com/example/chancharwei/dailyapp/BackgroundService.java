@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -68,14 +70,16 @@ public class BackgroundService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
-            exchangeRateHTMLUtility = new ExchangeRateHTMLUtility();
-            exchangeRateHTMLUtility.parsingHTMLData(TAIWAN_BANK_EXCHANGERATE);
             try {
                 URL exchangeRateURL = new URL(TAIWAN_BANK_EXCHANGERATE);
                 if (NetworkUtility.HttpCheckStatusWithURL(exchangeRateURL)) {
                     exchangeRateHTMLUtility = new ExchangeRateHTMLUtility();
-                    exchangeRateHTMLUtility.parsingHTMLData(TAIWAN_BANK_EXCHANGERATE);
+                    int parsingResult = exchangeRateHTMLUtility.parsingHTMLData(TAIWAN_BANK_EXCHANGERATE);
 
+                    if(parsingResult != 0){
+                        Log.e(TAG,"parsing exchangeRate failed result("+parsingResult+")");
+                        return;
+                    }
                     if(exchangeRateHTMLUtility.getCurrencyTitle()!=null && exchangeRateHTMLUtility.getCurrencyInfo() != null){
                         recordExchangeRate(exchangeRateHTMLUtility.getTransformDoneDataList());
                     }

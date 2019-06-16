@@ -55,7 +55,7 @@ public class ExchangeRateActivity extends AppCompatActivity {
     ExchangeRatePerDayRecord exchangeRatePerDayRecord = null;
     private ServiceHandleWork serviceHandleWork;
     private final int WORK_GETDATA_TO_DATABASE = 1,WORK_SEARCHDATA_FROM_DATABASE = 2; //WORK CONTENT IN NEW THREAD
-    private final int UPDATE_UI_CURRENT_EXCHANGERATE= 1,UPDATE_UI_SPINNER_CURRENCY = 2,UPDATE_UI_SEARCH_EXCHANGERATE = 3;
+    private final int UPDATE_UI_BY_SAVE_DATA = 0,UPDATE_UI_CURRENT_EXCHANGERATE= 1,UPDATE_UI_SPINNER_CURRENCY = 2,UPDATE_UI_SEARCH_EXCHANGERATE = 3;
     private final int numDataEachCurrency = ExchangeRateHTMLUtility.PARSE_NUM_DATA_EACH_CURRENCY;
     HorizontalScrollView horizontalScrollView_database;
     HorizontalScrollView horizontalScrollView_current;
@@ -147,6 +147,9 @@ public class ExchangeRateActivity extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.getData().getInt("updateID")){
+                    case UPDATE_UI_BY_SAVE_DATA:
+                        updateUIwithSaveData();
+                        break;
                     case UPDATE_UI_CURRENT_EXCHANGERATE:
                         String[] current_data = msg.getData().getStringArrayList("currentExchangeRate").toArray(new String[msg.getData().getStringArrayList("currentExchangeRate").size()]);
                         showCurrentDataInTable(current_data);
@@ -363,8 +366,18 @@ public class ExchangeRateActivity extends AppCompatActivity {
                     URL exchangeRateURL = new URL(TAIWAN_BANK_EXCHANGERATE);
                     if (NetworkUtility.HttpCheckStatusWithURL(exchangeRateURL)) {
                         ExchangeRateHTMLUtility exchangeRateHTMLUtility = new ExchangeRateHTMLUtility();
-                        exchangeRateHTMLUtility.parsingHTMLData(TAIWAN_BANK_EXCHANGERATE);
-
+                        int parsingResult = exchangeRateHTMLUtility.parsingHTMLData(TAIWAN_BANK_EXCHANGERATE);
+                        //parsing result failed, use old data instead of new data +++
+                        if(parsingResult != 0){
+                            Log.e(TAG,"parsing exchangeRate failed result("+parsingResult+")");
+                            Bundle newBundle = new Bundle();
+                            newBundle.putInt("updateID", UPDATE_UI_BY_SAVE_DATA);
+                            Message msg = new Message();
+                            msg.setData(newBundle);
+                            updateUIHandler.sendMessage(msg);
+                            return;
+                        }
+                        //parsing result failed, use old data instead of new data ---
                         if(exchangeRateHTMLUtility.getCurrencyTitle()!=null && exchangeRateHTMLUtility.getCurrencyInfo() != null){
                             showAndRecordExchangeRate(exchangeRateHTMLUtility);
                         }
@@ -444,6 +457,9 @@ public class ExchangeRateActivity extends AppCompatActivity {
         if(exchangeRateHTMLUtility.getOriginalDataList()!=null){
             updateUIInfo(UPDATE_UI_CURRENT_EXCHANGERATE,exchangeRateHTMLUtility.getOriginalDataList());
             saveData(UPDATE_UI_CURRENT_EXCHANGERATE,exchangeRateHTMLUtility.getOriginalDataList());
+        }else{
+            Log.w(TAG,"get wrong data, use original data");
+            return;
         }
 
         Log.d(TAG,"lastDateTime = "+ exchangeRatePreference.getString("recordDateTime","yyyy/MM/dd")+" dateTime = "+dateTime);
@@ -569,6 +585,8 @@ public class ExchangeRateActivity extends AppCompatActivity {
         newBundle.putInt("updateID",updateID);
         Message msg = new Message();
         switch (updateID){
+            case UPDATE_UI_BY_SAVE_DATA:
+                break;
             case UPDATE_UI_SPINNER_CURRENCY:
                 newBundle.putStringArrayList("currencyType",(ArrayList<String>) settingObject);
                 break;

@@ -15,13 +15,18 @@ import java.util.ArrayList;
 public class ExchangeRateHTMLUtility {
     private static final String TAG = ExchangeRateHTMLUtility.class.getName();
     public static final int PARSE_NUM_DATA_EACH_CURRENCY = 5;
+    private static final int NUM_OF_CURRENCY_TYPE = 19;
     private String[] currencyTitle, currencyInfo = null;
     private ArrayList<String> originalDataList = new ArrayList<>();
     private ArrayList<Object> transformDoneDataList = new ArrayList<>();
     private static int numOfTypeCurrency = 0;
     private String[] dateTime = null;
-    public void parsingHTMLData(String url){
+    public int parsingHTMLData(String url){
+        int ERROR_NULL_EXCHANGERATE_INFO = -1;
+        int ERROR_WRONG_NUM_CURRENCY = -2;
         Document exchangeRateDoc = null;
+        transformDoneDataList.clear(); //initial dataList
+        originalDataList.clear(); //initial dataList
         try {
             exchangeRateDoc = Jsoup.connect(url).get();
         } catch (IOException e) {
@@ -29,7 +34,7 @@ public class ExchangeRateHTMLUtility {
         }
         if(exchangeRateDoc == null){
             Log.d(TAG,"exchangeRateDoc is null");
-            return;
+            return ERROR_NULL_EXCHANGERATE_INFO;
         }
         Elements elements = exchangeRateDoc.body().select("p");
         for(Element element : elements){
@@ -42,9 +47,12 @@ public class ExchangeRateHTMLUtility {
         }
         Elements tr_table = exchangeRateDoc.body().select("tbody").select("tr");
         numOfTypeCurrency = tr_table.size();
+        if(numOfTypeCurrency != NUM_OF_CURRENCY_TYPE){
+            Log.w(TAG,"get number of type currency = "+numOfTypeCurrency);
+            return ERROR_WRONG_NUM_CURRENCY;
+        }
         currencyTitle = new String[PARSE_NUM_DATA_EACH_CURRENCY];
         currencyInfo = new String[PARSE_NUM_DATA_EACH_CURRENCY];
-        Log.d(TAG,"Byron check total size = "+PARSE_NUM_DATA_EACH_CURRENCY*tr_table.size());
         for(Element element : tr_table){
             for(int i=0; i<PARSE_NUM_DATA_EACH_CURRENCY ;i++){
                 Element data = element.select("td").get(i);
@@ -63,6 +71,7 @@ public class ExchangeRateHTMLUtility {
             }
         }
         transformDoneDataList = transformData(originalDataList);
+        return 0;
     }
 
     private ArrayList<Object> transformData(ArrayList<String> dataList){
@@ -92,6 +101,7 @@ public class ExchangeRateHTMLUtility {
 
     public ArrayList<Object> getTransformDoneDataList(){
         if(!transformDoneDataList.isEmpty()){
+            Log.w(TAG,"currency data list is null");
             return transformDoneDataList;
         }else{
             return null;
@@ -100,6 +110,7 @@ public class ExchangeRateHTMLUtility {
 
     public ArrayList<String> getOriginalDataList(){
         if(!originalDataList.isEmpty()){
+            Log.w(TAG,"currency data list is null");
             return originalDataList;
         }else{
             return null;
