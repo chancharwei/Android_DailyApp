@@ -74,87 +74,93 @@
         app:layout_constraintStart_toStartOf="@+id/horizontalScrollView_current"
         app:layout_constraintTop_toBottomOf="@+id/imageView_background">
 
-        <TableLayout
-            android:id="@+id/search_exchangeRate_table"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="116dp">
 
-            <TableRow android:id="@+id/row_item">
+            <TableLayout
+                android:id="@+id/search_exchangeRate_table"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_date" />
+                <TableRow android:id="@+id/row_item">
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_currency" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_date" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_cashBuyMax" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_currency" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_cashBuyMin" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_cashBuyMax" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_cashSellMax" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_cashBuyMin" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_cashSellMin" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_cashSellMax" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_spotBuyMax" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_cashSellMin" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_spotBuyMin" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_spotBuyMax" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_spotSellMax" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_spotBuyMin" />
 
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/border_style"
-                    android:padding="6dp"
-                    android:text="@string/ex_spotSellMin" />
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_spotSellMax" />
 
-            </TableRow>
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/border_style"
+                        android:padding="6dp"
+                        android:text="@string/ex_spotSellMin" />
 
-        </TableLayout>
+                </TableRow>
 
+            </TableLayout>
+        </ScrollView>
     </HorizontalScrollView>
 
     <ImageView
