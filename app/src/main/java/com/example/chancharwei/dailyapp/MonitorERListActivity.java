@@ -70,6 +70,10 @@ public class MonitorERListActivity extends AppCompatActivity implements MonitorE
      */
     private void assignDataInfoToList(){
         ArrayList<ExchangeRateMonitorData> monitorDataList = exchangeRateMonitorRecord.querAllData();
+        if(monitorDataList == null){
+            Log.i(TAG,"no monitor data in database");
+            return;
+        }
         double currentExchangeRate;
         mCashRateBuyInList = new ArrayList();
         mSpotRateBuyInList = new ArrayList();
