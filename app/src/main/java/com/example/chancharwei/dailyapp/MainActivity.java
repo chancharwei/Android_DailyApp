@@ -8,17 +8,52 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
     final String TAG = getClass().getName();
+    private ImageView mImageView_weather,mImageView_exchangeRate;
+    private ImageButton mImageButton_weather,mImageButton_exchangeRate;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG,"onCreate");
-        //Document doc = Jsoup.connect();
-
+        mImageView_weather = findViewById(R.id.weather_icon);
+        mImageButton_weather = findViewById(R.id.weather_background);
+        mImageButton_weather.setBackgroundResource(R.drawable.background_border);
+        mImageButton_weather.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    mImageButton_weather.setBackgroundResource(R.drawable.background_border2);
+                }else if(event.getAction() == MotionEvent.ACTION_UP){
+                    mImageButton_weather.setBackgroundResource(R.drawable.background_border);
+                    startFeature(WeatherActivity.class);
+                }
+                return false;
+            }
+        });
+        mImageView_exchangeRate = findViewById(R.id.exchangeRate_icon);
+        mImageButton_exchangeRate = findViewById(R.id.exchangeRate_background);
+        mImageButton_exchangeRate.setBackgroundResource(R.drawable.background_border);
+        mImageButton_exchangeRate.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    mImageButton_exchangeRate.setBackgroundResource(R.drawable.background_border2);
+                }else if(event.getAction() == MotionEvent.ACTION_UP){
+                    mImageButton_exchangeRate.setBackgroundResource(R.drawable.background_border);
+                    startFeature(ExchangeRateActivity.class);
+                }
+                return false;
+            }
+        });
     }
+
 
     @Override
     protected void onStart() {
@@ -87,9 +122,13 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-
         return true;
+    }
 
-
+    private void startFeature(Class featureClass){
+        Intent featureIntent = new Intent();
+        featureIntent.setClass(MainActivity.this,featureClass);
+        startActivity(featureIntent);
+        finish();
     }
 }
